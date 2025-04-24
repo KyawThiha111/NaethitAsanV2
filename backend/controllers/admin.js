@@ -1,4 +1,5 @@
 import adminCollection from "../models/admin.js";
+import AboutUsBannerCollection from "../models/AboutUs/aboutbanner.js";
 import bcryptjs from "bcryptjs"
 import { verifySignupEmail,welcomeEmail } from "../mailtrap/mail.js";
 import generateAccessTokenAndSetCookie from "../utils/geneateTokenAndSetCookie.js";
@@ -48,7 +49,12 @@ export const SignUpVerify = async(req,res)=>{
       const loginToken = generateAccessTokenAndSetCookie(res,adminExisting._id,adminExisting.position);
       /* Email */
       await welcomeEmail(adminExisting.email,adminExisting.baseModelName,adminExisting.position)
-      return res.status(200).json({success:true,message:`Logged in as an ${adminExisting.position}`,loginToken:loginToken})
+      /* Create default pages data */
+     const createdaboutusBanner= await AboutUsBannerCollection.create({admin:adminExisting._id})
+      if(!createdaboutusBanner){
+         return res.status(400).json({success:false,message:"An error occured while creating default pages!"})
+      }
+     return res.status(200).json({success:true,message:`Logged in as an ${adminExisting.position}`,loginToken:loginToken})
    } catch (error) {
       return res.status(500).json({success:false,error:error.message})
    }

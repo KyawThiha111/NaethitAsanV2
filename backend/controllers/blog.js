@@ -2,10 +2,14 @@ import BlogCollection from "../models/blog.js";
 import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
+import dotenv from "dotenv"
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-//Create, Update, GetAll
+dotenv.config({
+    path:path.join(__dirname,"..",".env")
+})
+//Create, Update, GetAll, Delete 
 
 export const CreateBlog = async (req, res) => {
     try {
@@ -45,7 +49,7 @@ export const CreateBlog = async (req, res) => {
             timelength,
             catagory,
             admin:adminid,
-            ...req.file&&{img:path.join("/public","Blog",req.file.filename)}
+            ...req.file&&{img:`/public/Blog/${req.file.filename}`}
         }
         // Create new blog
         const createdBlog = await BlogCollection.create(toUploadBlog);
@@ -117,7 +121,7 @@ export const UpdateBlogPost = async(req,res)=>{
     }
   /* Get new URL */
      if(req.file){
-        imgUrl = path.join("/public","Blog",path.basename(req.file.filename))
+        imgUrl = `/public/Blog/${req.file.filename}`
      }
     /* Update by checking if the user add a new file or not */
      /* Update the blog */    
@@ -161,5 +165,38 @@ export const GetAllBlog = async(req,res)=>{
     } catch (error) {
         console.log(error)
         return res.status(500).json({success:false,error:process.env.NODE_ENV==="development"?error.message:undefined})
+    }
+}
+
+export const DeleteBlog = async(req,res)=>{
+    try {
+        const {blogid} = req.params;
+        const adminid = req.adminid;
+
+        /* If blog exist */
+        const exisitingBlog = await BlogCollection.findById(blogid);
+        if(!exisitingBlog){
+            return res.status(404).json({success:false,error:"No posts found to delete!"})
+        }
+        if(exisitingBlog.admin.toString()!==adminid){
+            return res.status(403).json({success:false,message:"Only the owner can delete the post!"})
+        }
+        /* Delete the post from public folder */
+        if(exisitingBlog.img){
+            const imgUrlToDelete = path.join(__dirname,"..",exisitingBlog.img.startsWith("/")?exisitingBlog.img.slice(1):exisitingBlog.img)
+            if(fs.existsSync(imgUrlToDelete)){
+                fs.unlinkSync(imgUrlToDelete)
+            }
+        }
+
+        /* Delete from MongoDB */
+        const deletedBlog = await BlogCollection.findByIdAndDelete(blogid)
+        if(!deletedBlog){
+            throw new Error("Failed to delete the blog!")
+        }
+        return res.status(200).json({success:true,message:"Blog deleted!"})
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({success:false,message:"Internal server error!",error:process.env.NODE_ENV==="development"?error.message:undefined})
     }
 }
