@@ -1,19 +1,22 @@
 import nodemailer from "nodemailer";
+import dotenv from "dotenv"
+import path from "path";
+import { fileURLToPath } from "url";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename)
 
+dotenv.config({
+  path:path.join(__dirname,"..",".env")
+})
 const testAccount = await nodemailer.createTestAccount()
 
 export const transport = nodemailer.createTransport({
-  host: "smtp.ethereal.email",
-  port: 587,
-  secure: false, // true for port 465, false for other ports
+  service: 'gmail',
   auth: {
-    user:testAccount.user,
-    pass:testAccount.pass,
+    user: process.env.SENDER_MAIL,
+    pass: process.env.MAIL_PASSWORD, 
   },
 });
 
-export const sender = {
-    address: testAccount.user,
-    name:"Kyaw Thiha"
-}
+export const sender = process.env.SENDER_MAIL;
 

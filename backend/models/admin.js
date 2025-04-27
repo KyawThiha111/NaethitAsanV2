@@ -31,6 +31,8 @@ const adminSchema = new Schema({
    resetpassowordTokenExpiresAt:Date,
    verificationToken:String,
    verificationTokenExpiresAt:Date,
+   loginVerificationToken:String,
+   loginVerificationTokenExpiresAt:Date
 },{timestamps:true})
 
 const adminCollection = model("admin",adminSchema)

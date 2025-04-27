@@ -1,4 +1,4 @@
-import { VERIFICATION_EMAIL_TEMPLATE,Login_EMAIL_TEMPLATE,PASSWORD_RESET_REQUEST_TEMPLATE,PASSWORD_RESET_SUCCESS_TEMPLATE } from "../mailtrap/mailtemplates.js";
+import { VERIFICATION_EMAIL_TEMPLATE,LOGIN_VERIFY_EMAIL_TEMPLATE,Login_EMAIL_TEMPLATE,PASSWORD_RESET_REQUEST_TEMPLATE,PASSWORD_RESET_SUCCESS_TEMPLATE } from "../mailtrap/mailtemplates.js";
 import { transport,sender } from "./mailconfig.js";
 import nodemailer from "nodemailer";
 
@@ -30,8 +30,24 @@ export const welcomeEmail = async(email,name,position)=>{
         catagory:"Loggin Noti!"
     })
     console.log("Email sent successfully",response);
-    console.log('Preview URL: %s', nodemailer.getTestMessageUrl(response));
    } catch (error) {
     console.log("Sending verification error!")
    }
+}
+
+export const verifyLoginEmail = async(email,loginToken)=>{
+    const recipient = email;
+    try {
+       const response = await transport.sendMail({
+        from:sender,
+        to:recipient,
+        subject:"Verify your account with the login token below!",
+        html:LOGIN_VERIFY_EMAIL_TEMPLATE.replace("{verificationCode}",loginToken),
+        catagory:"Email Verification!"
+       })
+       console.log("Email sent successfully",response);
+       console.log('Preview URL: %s', nodemailer.getTestMessageUrl(response));
+    } catch (error) {
+        console.log("Sending verification error!")
+    }
 }

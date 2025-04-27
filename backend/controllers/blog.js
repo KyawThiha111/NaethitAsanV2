@@ -14,10 +14,10 @@ dotenv.config({
 export const CreateBlog = async (req, res) => {
     try {
         const adminid = req.adminid;
-        const { title, description, blog, postdate, timelength, catagory } = req.body;
+        const { titleen,titlemy, descriptionen,descriptionmy, blogen,blogmy, postdate, timelength, catagory } = req.body;
 
         // Validate required fields
-        const requiredFields = { title, description, blog, postdate, timelength, catagory };
+        const requiredFields = { titleen,titlemy, descriptionen,descriptionmy, blogen,blogmy, postdate, timelength, catagory };
         const missingFields = Object.entries(requiredFields)
             .filter(([_, value]) => !value)
             .map(([key]) => key);
@@ -32,7 +32,7 @@ export const CreateBlog = async (req, res) => {
         }
 
         // Check for existing blog
-        const blogExist = await BlogCollection.findOne({ title });
+        const blogExist = await BlogCollection.findOne({$or:[{titleen:titleen},{titlemy:titlemy}]});
         if (blogExist) {
             fs.unlinkSync(path.join(__dirname,"..","public","Blog",req.file.filename))
             return res.status(409).json({ // 409 Conflict is more appropriate
@@ -42,9 +42,12 @@ export const CreateBlog = async (req, res) => {
         }
 
         const toUploadBlog = {
-            title,
-            description,
-            blog,
+            titleen,
+            titlemy,
+            descriptionen,
+            descriptionmy,
+            blogen,
+            blogmy,
             postdate,
             timelength,
             catagory,
@@ -84,9 +87,9 @@ export const UpdateBlogPost = async(req,res)=>{
    try {
     const {blogid} = req.params;
     const adminid = req.adminid;
-    const {title,description,blog,postdate,timelength,catagory} = req.body;
+    const {titleen,titlemy,descriptionen,descriptionmy,blogen,blogmy,postdate,timelength,catagory} = req.body;
 
-    const requiredFileds = {title,description,blog,postdate,timelength,catagory}
+    const requiredFileds = {titleen,titlemy,descriptionen,descriptionmy,blogen,blogmy,postdate,timelength,catagory}
     const missingFields = Object.entries(requiredFileds).filter(([_,value])=>!value).map(([key])=>key);
 
     if(missingFields.length>0){
@@ -126,9 +129,12 @@ export const UpdateBlogPost = async(req,res)=>{
     /* Update by checking if the user add a new file or not */
      /* Update the blog */    
     const toUpdateData = {
-        title:title,
-        description:description,
-        blog:blog,
+        titleen,
+        titlemy,
+        descriptionen,
+        descriptionmy,
+        blogen,
+        blogmy,
         postdate,
         timelength,
         catagory,
@@ -152,21 +158,79 @@ export const UpdateBlogPost = async(req,res)=>{
    }
 }
 
-export const GetAllBlog = async(req,res)=>{
+//getallblog
+export const GetAllBlog = async (req, res) => {
     try {
-        const blogs = await BlogCollection.find();
-        if(!blogs){
-            return res.status(404).json({success:false,message:"Error while getting blogs!"})
+        const { lang } = req.query;
+        
+        // Validate language parameter
+        if (!lang || (lang !== 'en' && lang !== 'my')) {
+            return res.status(400).json({
+                success: false,
+                message: "Please specify language with lang=en or lang=my"
+            });
         }
-        if(blogs.length===0){
-            return res.status(200).json({success:true,message:"No blogs to show!"})
+
+        // Determine which fields to select based on language
+        const projection = {
+            [`title${lang}`]: 1,
+            [`description${lang}`]: 1,
+            [`blog${lang}`]: 1,
+            postdate: 1,
+            timelength: 1,
+            catagory: 1,
+            img: 1,
+            createdAt: 1,
+            updatedAt: 1
+        };
+
+        // Get all blogs with the specified language fields
+        const blogs = await BlogCollection.find({}, projection)
+            .sort({ postdate: -1 }) // Sort by newest first
+            .populate('admin', 'adminname email position'); // Include admin info if needed
+
+        if (!blogs || blogs.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "No blogs found"
+            });
         }
-        return res.status(200).json({success:true,message:"Blogs are shown",blogs:blogs})
+
+        // Rename fields to remove language suffix for cleaner response
+        const formattedBlogs = blogs.map(blog => {
+            const formattedBlog = {
+                ...blog._doc,
+                title: blog._doc[`title${lang}`],
+                description: blog._doc[`description${lang}`],
+                blog: blog._doc[`blog${lang}`]
+            };
+            
+            // Remove the language-specific fields
+            delete formattedBlog[`title${lang}`];
+            delete formattedBlog[`title${lang === 'en' ? 'my' : 'en'}`];
+            delete formattedBlog[`description${lang}`];
+            delete formattedBlog[`description${lang === 'en' ? 'my' : 'en'}`];
+            delete formattedBlog[`blog${lang}`];
+            delete formattedBlog[`blog${lang === 'en' ? 'my' : 'en'}`];
+            
+            return formattedBlog;
+        });
+
+        return res.status(200).json({
+            success: true,
+            count: formattedBlogs.length,
+            blogs: formattedBlogs
+        });
+
     } catch (error) {
-        console.log(error)
-        return res.status(500).json({success:false,error:process.env.NODE_ENV==="development"?error.message:undefined})
+        console.error("Get blogs error:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error",
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
     }
-}
+};
 
 export const DeleteBlog = async(req,res)=>{
     try {
