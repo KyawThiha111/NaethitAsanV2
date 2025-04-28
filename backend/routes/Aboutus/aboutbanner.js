@@ -4,6 +4,6 @@ import { checkAuthMiddleware } from "../../middleware/adminauth.js";
 import { uploadAboutus } from "../../middleware/multer.js";
 const AboutBannerRouter = Router();
 
-AboutBannerRouter.put("/aboutbanner",checkAuthMiddleware,uploadAboutus.single("bannerbackground"),UpdateAboutBanner)
+AboutBannerRouter.put("/aboutbanner",checkAuthMiddleware,uploadAboutus,UpdateAboutBanner)
 AboutBannerRouter.get("/aboutbanner",GetAboutBanner)
 export default AboutBannerRouter;

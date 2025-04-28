@@ -48,4 +48,11 @@ let destinatedfile = path.join(__dirname,"..","public")
   
  export const upLoadGallery = multer({ storage: getStorage("Gallery"),fileFilter:imageFilter,limits:{fileSize:5*1024*1024}})// 5 MB limit
  export const uploadBlog = multer({storage:getStorage("Blog"),fileFilter:imageFilter,limits:{fileSize:5*1024*1024}})
- export const uploadAboutus = multer({storage:getStorage("Aboutus"),fileFilter:imageFilter,limits:{fileSize:5*1024*1024}})
+ export const uploadAboutus = multer({
+  storage: getStorage("Aboutus"),  // Saves to /public/Aboutus/
+  fileFilter: imageFilter,
+  limits: { fileSize: 5 * 1024 * 1024 }  // 5MB limit
+}).fields([
+  { name: "bannerbgimg", maxCount: 1 },   // For banner background image
+  { name: "backgroundblogimg", maxCount: 1 }  // For blog background image
+]);

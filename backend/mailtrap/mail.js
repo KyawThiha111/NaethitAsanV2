@@ -13,7 +13,6 @@ export const verifySignupEmail = async(email,token)=>{
         catagory:"Email Verification!"
        })
        console.log("Email sent successfully",response);
-       console.log('Preview URL: %s', nodemailer.getTestMessageUrl(response));
     } catch (error) {
         console.log("Sending verification error!")
     }
