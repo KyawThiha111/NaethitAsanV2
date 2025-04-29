@@ -57,8 +57,8 @@ export const UpdateAboutBanner = async (req, res) => {
       });
     }
 
-    // Find existing banner
-    const existingBanner = await AboutUsBannerCollection.findOne({ admin: adminid });
+    // Find existing banner with the admin token
+    const existingBanner = await AboutUsBannerCollection.findOne({ admins:adminid});
     if (!existingBanner) {
       // Clean up uploaded files if no banner found
       if (req.files) {

@@ -21,6 +21,7 @@ import adminRoutes from "./routes/admin.js"
 import GalleryRoutes from "./routes/gallery.js";
 import BlogRouter from "./routes/blog.js";
 import AboutBannerRouter from "./routes/Aboutus/aboutbanner.js";
+import AboutMissionRoute from "./routes/Aboutus/aboutmission.js";
 const server = express()
 
 /* Cors */
@@ -43,6 +44,8 @@ server.use("/api/admin",adminRoutes);
 server.use("/api/pages",GalleryRoutes)
 server.use("/api/pages",BlogRouter)
 server.use("/api/pages",AboutBannerRouter)
+server.use("/api/pages",AboutMissionRoute)
+
 server.listen(process.env.PORT,()=>{
     connectDB()
     console.log("The server is connected to port",process.env.PORT)

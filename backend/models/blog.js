@@ -46,11 +46,13 @@ const BlogSchema = new Schema({
         required:true,
         enum:["All","Community","Volunteers","Research","Partnerships"]
     },
-    admin:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:"admin",
-        required:true
-    }
+     admins:[
+           {
+               type:mongoose.Schema.Types.ObjectId,
+               ref:"admin",
+               required:true,
+              }
+       ]
 },{timestamps:true})
 
 const BlogCollection = model("blog",BlogSchema)

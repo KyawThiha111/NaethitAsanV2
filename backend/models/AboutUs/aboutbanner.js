@@ -84,11 +84,13 @@ const aboutusBannerSchema = new Schema({
       required:true,  
       default: "လူတိုင်းအတွက် အခြေခံလိုအပ်ချက်များ၊ တိုးတက်ဖွံ့ဖြိုးရန်အခွင့်အလမ်းများ၊ နှင့် ကြင်နာစောင့်ရှောက်သော လူ့အသိုင်းအဝိုင်း၏ ထောက်ခံမှုတို့ကို လူရေးအခြေအနေမရွေး ရရှိနိုင်သော ကမ္ဘာတစ်ခု။"
     },
-    admin:{
-        type:mongoose.Schema.Types.ObjectId,
-         ref:"admin",
-         required:true 
-    }
+    admins:[
+        {
+            type:mongoose.Schema.Types.ObjectId,
+            ref:"admin",
+            required:true,
+           }
+    ] 
 },{timestamps:true})
 
 const AboutUsBannerCollection = model("aboutusbanner",aboutusBannerSchema)
