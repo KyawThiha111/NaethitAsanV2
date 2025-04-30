@@ -51,12 +51,25 @@ export const CreateBlog = async (req, res) => {
        if (req.file) {
         filePath = path.join(__dirname, "..", "public", "Blog", req.file.filename);
       }
+       //verify admin
+    const adminverified = await verifyAdmin(adminid)
+    if(!adminverified){
+      const filename = path.basename(filePath);
+      const todeletePath = path.join("Blog", filename);
+     cleanUpFile(todeletePath);// delete the file
+      return res.status(403).json({
+          success: false,
+          message: "Unauthorized - Invalid admin credentials"
+      });
+    }
     const missingFields = Object.entries(requiredFields)
       .filter(([_, value]) => !value)
       .map(([key]) => key);
 
     if (missingFields.length > 0) {
-      cleanUpFile(filePath)// delete the file
+       const filename = path.basename(filePath);
+       const todeletePath = path.join("Blog", filename);
+      cleanUpFile(todeletePath);// delete the file
       return res.status(400).json({
         success: false,
         message: "Fields required!",
@@ -69,7 +82,9 @@ export const CreateBlog = async (req, res) => {
       $or: [{ titleen: titleen }, { titlemy: titlemy }],
     });
     if (blogExist) {
-      cleanUpFile(filePath)
+      const filename = path.basename(filePath);
+      const todeletePath = path.join("Blog", filename);
+     cleanUpFile(todeletePath);// delete the file
       return res.status(409).json({
         // 409 Conflict is more appropriate
         success: false,
@@ -90,20 +105,14 @@ export const CreateBlog = async (req, res) => {
       admins: alladminids,
       ...(req.file && { img: `/public/Blog/${req.file.filename}` }),
     };
-          //verify admin
-          const adminverified = await verifyAdmin(adminid)
-          if(!adminverified){
-           cleanUpFile(filePath)
-            return res.status(403).json({
-                success: false,
-                message: "Unauthorized - Invalid admin credentials"
-            });
-          }
+
     // Create new blog
     const createdBlog = await BlogCollection.create(toUploadBlog);
 
     if (!createdBlog) {
-      cleanUpFile(filePath)
+      const filename = path.basename(filePath);
+      const todeletePath = path.join("Blog", filename);
+     cleanUpFile(todeletePath);// delete the file
       return res.status(500).json({
         success: false,
         message: "Error while creating a blog!",
@@ -116,7 +125,9 @@ export const CreateBlog = async (req, res) => {
     });
   } catch (error) {
     if (req.file) {
-     cleanUpFile(filePath)
+      const filename = path.basename(filePath);
+      const todeletePath = path.join("Blog", filename);
+     cleanUpFile(todeletePath);// delete the file
     }
     console.error("Blog creation error:", error);
     return res.status(500).json({
@@ -174,7 +185,9 @@ export const UpdateBlogPost = async (req, res) => {
       .map(([key]) => key);
 
     if (missingFields.length > 0) {
-      cleanUpFile(newFilePath);
+      const filename = path.basename(newFilePath);
+      const todeletePath = path.join("Blog", filename);
+     cleanUpFile(todeletePath);
       return res.status(400).json({ 
         success: false, 
         message: "Fields required!", 
@@ -185,7 +198,9 @@ export const UpdateBlogPost = async (req, res) => {
     // Verify admin first
     const adminverified = await verifyAdmin(adminid);
     if (!adminverified) {
-      cleanUpFile(newFilePath);
+      const filename = path.basename(newFilePath);
+      const todeletePath = path.join("Blog", filename);
+     cleanUpFile(todeletePath);
       return res.status(403).json({
         success: false,
         message: "Unauthorized - Invalid admin credentials"
@@ -195,7 +210,9 @@ export const UpdateBlogPost = async (req, res) => {
     // Check if blog exists and admin has permission
     const existingBlog = await BlogCollection.findById(blogid);
     if (!existingBlog) {
-      cleanUpFile(newFilePath);
+      const filename = path.basename(newFilePath);
+      const todeletePath = path.join("Blog", filename);
+     cleanUpFile(todeletePath);
       return res.status(404).json({ 
         success: false, 
         message: "Blog not found!" 
@@ -204,7 +221,9 @@ export const UpdateBlogPost = async (req, res) => {
 
     // Check if admin is in the admins array
     if (!existingBlog.admins.includes(adminid)) {
-      cleanUpFile(newFilePath);
+      const filename = path.basename(newFilePath);
+      const todeletePath = path.join("Blog", filename);
+     cleanUpFile(todeletePath);
       return res.status(403).json({
         success: false,
         message: "Unauthorized! You don't have permission to update this blog!",
@@ -222,7 +241,9 @@ export const UpdateBlogPost = async (req, res) => {
       const ext = path.extname(req.file.originalname).toLowerCase();
 
       if (!allowedMimeTypes.includes(req.file.mimetype) && ext !== ".jfif") {
-        cleanUpFile(newFilePath);
+        const filename = path.basename(newFilePath);
+        const todeletePath = path.join("Blog", filename);
+       cleanUpFile(todeletePath);
         return res.status(400).json({ 
           success: false, 
           message: "Invalid image format!" 
@@ -258,13 +279,17 @@ export const UpdateBlogPost = async (req, res) => {
     );
 
     if (!updatedBlog) {
-      cleanUpFile(newFilePath);
+      const filename = path.basename(newFilePath);
+      const todeletePath = path.join("Blog", filename);
+     cleanUpFile(todeletePath);
       throw new Error("Failed to update blog");
     }
 
     // Clean up old file after successful update
     if (oldFilePath) {
-      cleanUpFile(oldFilePath);
+      const filename = path.basename(oldFilePath);
+      const todeletePath = path.join("Blog", filename);
+     cleanUpFile(todeletePath);
     }
 
     return res.status(200).json({
@@ -275,7 +300,11 @@ export const UpdateBlogPost = async (req, res) => {
 
   } catch (error) {
     // Clean up new file if error occurred
-    cleanUpFile(newFilePath);
+    if(newFilePath){
+    const filename = path.basename(newFilePath);
+    const todeletePath = path.join("Blog", filename);
+   cleanUpFile(todeletePath);
+    }
     console.error("Blog update error:", error);
     
     return res.status(500).json({
@@ -493,7 +522,9 @@ export const DeleteBlog = async (req, res) => {
     // Clean up associated image file if it exists
     if (blogToDelete.img) {
       const imagePath = path.join(__dirname, '..', blogToDelete.img);
-      cleanUpFile(imagePath);
+      const filename = path.basename(imagePath);
+      const todeletePath = path.join("Blog", filename);
+      cleanUpFile(todeletePath);
     }
 
     return res.status(200).json({ 
