@@ -12,6 +12,8 @@ const __dirname = path.dirname(__filename);
 dotenv.config({
   path: path.join(__dirname, "..", ".env"),
 });
+
+const BASE_URL = process.env.BASE_URL;
 //Create, Update, GetAll, Delete
 
 export const CreateBlog = async (req, res) => {
@@ -333,7 +335,7 @@ export const GetAllBlog = async (req, res) => {
         postdate: blog.postdate,
         timelength: blog.timelength,
         category: blog.catagory,
-        image: blog.img,
+        image: `${BASE_URL}${blog.img}`,
         admins: blog.admins, // Include the admins array
         createdAt: blog.createdAt,
         updatedAt: blog.updatedAt
@@ -424,7 +426,7 @@ export const GetBlogsByCategory = async (req, res) => {
       description: blog[`description${lang}`],
       content: blog[`blog${lang}`],
       category: blog.catagory,
-      image: blog.img,
+      image: `${BASE_URL}${blog.img}`,
       postDate: blog.postdate,
       timeLength: blog.timelength,
       authors: blog.admins,

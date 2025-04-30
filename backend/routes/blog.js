@@ -6,6 +6,6 @@ import { checkAuthMiddleware } from "../middleware/adminauth.js";
 BlogRouter.post("/blog",checkAuthMiddleware,uploadBlog.single("img"),CreateBlog)
 BlogRouter.put("/blog/:blogid",checkAuthMiddleware,uploadBlog.single("img"),UpdateBlogPost)
 BlogRouter.get("/blog",GetAllBlog)
-BlogRouter.get("/blog",GetBlogsByCategory)
+BlogRouter.get("/blogsoncata",GetBlogsByCategory)
 BlogRouter.delete("/blog/:blogid",checkAuthMiddleware,DeleteBlog)
 export default BlogRouter;
