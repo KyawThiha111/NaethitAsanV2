@@ -388,6 +388,82 @@ export const GetAllBlog = async (req, res) => {
   }
 };
 
+//Get Single Blog
+export const GetSingleBlog = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { lang = "en" } = req.query;
+
+    // Validate blog ID
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: "Blog ID is required",
+      });
+    }
+
+    // Validate language parameter
+    if (lang !== "en" && lang !== "my") {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid language. Use lang=en or lang=my",
+      });
+    }
+
+    // Define which fields to select
+    const projection = {
+      [`title${lang}`]: 1,
+      [`description${lang}`]: 1,
+      [`blog${lang}`]: 1,
+      postdate: 1,
+      timelength: 1,
+      catagory: 1,
+      img: 1,
+      admins: 1,
+      createdAt: 1,
+      updatedAt: 1,
+    };
+
+    // Find the blog by ID
+    const blog = await BlogCollection.findById(id, projection)
+      .populate("admins", "adminname email position");
+
+    if (!blog) {
+      return res.status(404).json({
+        success: false,
+        message: "Blog not found",
+      });
+    }
+
+    const formatted = {
+      id: blog._id,
+      title: blog[`title${lang}`],
+      description: blog[`description${lang}`],
+      content: blog[`blog${lang}`],
+      postdate: blog.postdate,
+      timelength: blog.timelength,
+      category: blog.catagory,
+      image: `${BASE_URL}${blog.img}`,
+      admins: blog.admins,
+      createdAt: blog.createdAt,
+      updatedAt: blog.updatedAt,
+    };
+
+    return res.status(200).json({
+      success: true,
+      blog: formatted,
+    });
+
+  } catch (error) {
+    console.error("Get single blog error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined,
+    });
+  }
+};
+
 /* Get based on cata */
 export const GetBlogsByCategory = async (req, res) => {
   try {
