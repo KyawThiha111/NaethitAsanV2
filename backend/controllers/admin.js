@@ -2,6 +2,7 @@ import adminCollection from "../models/admin.js";
 import AboutUsBannerCollection from "../models/AboutUs/aboutbanner.js";
 import AbouUsMissionCollection from "../models/AboutUs/aboutusmission.js";
 import BlogCollection from "../models/blog.js";
+import TeamMemberCollection from "../models/AboutUs/teammember.js";
 //create functions
 import addAdminToCollectionWhileSignUp from "../utils/signupcollectionupdate.js";
 import bcryptjs from "bcryptjs"
@@ -93,6 +94,11 @@ export const SignUpVerify = async (req, res) => {
        const blogcount = await BlogCollection.countDocuments();
        if(blogcount>0){
         await addAdminToCollectionWhileSignUp(adminExisting._id,BlogCollection)
+       }
+       //3. Team Member 
+       const memberCount = await TeamMemberCollection.countDocuments();
+       if(memberCount>0){
+        await addAdminToCollectionWhileSignUp(adminExisting._id,TeamMemberCollection)
        }
         return res.status(200).json({
             success: true,
