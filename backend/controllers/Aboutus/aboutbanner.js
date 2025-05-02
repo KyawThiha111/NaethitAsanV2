@@ -242,3 +242,57 @@ export const GetAboutBanner = async (req, res) => {
     });
   }
 };
+
+export const toUpdateGetData = async (req, res) => {
+  try {
+    const banner = await AboutUsBannerCollection.findOne({});
+
+    if (!banner) {
+      return res.status(404).json({
+        success: false,
+        message: "Banner not found",
+      });
+    }
+
+    const bannerbgimgUrl = banner.bannerbgimg
+      ? `${BASE_URL}${banner.bannerbgimg}`
+      : null;
+
+    const backgroundblogimgUrl = banner.backgroundblogimg
+      ? `${BASE_URL}${banner.backgroundblogimg}`
+      : null;
+
+    const response = {
+      titleen: banner.titleen,
+      titlemy: banner.titlemy,
+      abouten: banner.abouten,
+      aboutmy: banner.aboutmy,
+      introductionen: banner.introductionen,
+      introductionmy: banner.introductionmy,
+      blogtitleen: banner.blogtitleen,
+      blogtitlemy: banner.blogtitlemy,
+      blogen: banner.blogen,
+      blogmy: banner.blogmy,
+      bannerbgimg: bannerbgimgUrl,
+      backgroundblogimg: backgroundblogimgUrl,
+      createdAt: banner.createdAt,
+      updatedAt: banner.updatedAt,
+      admins: banner.admins,
+    };
+
+    return res.status(200).json({
+      success: true,
+      data: response,
+    });
+
+  } catch (error) {
+    console.error("Error in toUpdateGetData:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined,
+    });
+  }
+};
+
+
