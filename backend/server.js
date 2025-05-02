@@ -27,9 +27,22 @@ import usermessageRouter from "./routes/Contactus/usermessage.js";
 const server = express()
 
 /* Cors */
-server.use(cors({
-    origin:"http://localhost:5173"
-}))
+// Allow requests from your production frontend
+const allowedOrigins = [
+    'http://localhost:5173',
+    'https://nae-thit-dashboard-7ghi.vercel.app',
+  ];
+
+  server.use(cors({
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
+    credentials: true, // If you're sending cookies or auth headers
+  }));
 dotenv.config({
     path:path.resolve(__dirname,".env")
 })
