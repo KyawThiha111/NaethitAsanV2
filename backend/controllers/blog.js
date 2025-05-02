@@ -618,3 +618,110 @@ export const DeleteBlog = async (req, res) => {
   }
 };
 
+/* For Dashboard */
+//Get All for Displaying
+export const GetAllBlogsBothLanguages = async (req, res) => {
+  try {
+    // Fetch all blog documents
+    const blogs = await BlogCollection.find({})
+      .sort({ postdate: -1 })
+      .populate("admins", "adminname email position");
+
+    if (!blogs || blogs.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No blogs found",
+      });
+    }
+
+    // Format the response to include both languages
+    const formattedBlogs = blogs.map((blog) => ({
+      id: blog._id,
+      titleen: blog.titleen,
+      titlemy: blog.titlemy,
+      descriptionen: blog.descriptionen,
+      descriptionmy: blog.descriptionmy,
+      blogen: blog.blogen,
+      blogmy: blog.blogmy,
+      postdate: blog.postdate,
+      timelength: blog.timelength,
+      category: blog.catagory,
+      image: blog.img ? `${BASE_URL}${blog.img}` : null,
+      admins: blog.admins,
+      createdAt: blog.createdAt,
+      updatedAt: blog.updatedAt,
+    }));
+
+    return res.status(200).json({
+      success: true,
+      count: formattedBlogs.length,
+      blogs: formattedBlogs,
+    });
+  } catch (error) {
+    console.error("Error fetching blogs in both languages:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined,
+    });
+  }
+};
+
+//Get each for updating
+export const GetSingleBlogForUpdate = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Check if ID is provided
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: "Blog ID is required",
+      });
+    }
+
+    // Fetch the blog by ID
+    const blog = await BlogCollection.findById(id).populate("admins", "adminname email position");
+
+    if (!blog) {
+      return res.status(404).json({
+        success: false,
+        message: "Blog not found",
+      });
+    }
+
+    // Format the response with both languages
+    const blogData = {
+      id: blog._id,
+      titleen: blog.titleen,
+      titlemy: blog.titlemy,
+      descriptionen: blog.descriptionen,
+      descriptionmy: blog.descriptionmy,
+      blogen: blog.blogen,
+      blogmy: blog.blogmy,
+      postdate: blog.postdate,
+      timelength: blog.timelength,
+      category: blog.catagory,
+      image: blog.img ? `${BASE_URL}${blog.img}` : null,
+      admins: blog.admins,
+      createdAt: blog.createdAt,
+      updatedAt: blog.updatedAt,
+    };
+
+    return res.status(200).json({
+      success: true,
+      blog: blogData,
+    });
+  } catch (error) {
+    console.error("Error fetching single blog:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined,
+    });
+  }
+};
+
+
+
+

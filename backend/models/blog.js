@@ -44,7 +44,6 @@ const BlogSchema = new Schema({
     catagory:{
         type:String,
         required:true,
-        enum:["All","Community","Volunteers","Research","Partnerships"]
     },
      admins:[
            {
