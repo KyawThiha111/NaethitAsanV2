@@ -34,10 +34,6 @@ export const UpdateAboutBanner = async (req, res) => {
       blogmy,
       introductionen,
       introductionmy,
-      visionquoteen,
-      visionquotemy,
-      visiontexten,
-      visiontextmy,
     } = req.body;
 
     // Validate required fields
@@ -52,10 +48,6 @@ export const UpdateAboutBanner = async (req, res) => {
       blogmy,
       introductionen,
       introductionmy,
-      visionquoteen,
-      visionquotemy,
-      visiontexten,
-      visiontextmy,
     };
 
     const missingFields = Object.entries(requiredFields)
@@ -235,10 +227,6 @@ export const GetAboutBanner = async (req, res) => {
       },
       introduction:
         lang === "en" ? banner.introductionen : banner.introductionmy,
-      vision: {
-        quote: lang === "en" ? banner.visionquoteen : banner.visionquotemy,
-        text: lang === "en" ? banner.visiontexten : banner.visiontextmy,
-      },
     };
 
     res.status(200).json({

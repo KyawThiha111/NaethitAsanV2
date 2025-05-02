@@ -71,13 +71,17 @@ export const SignUpVerify = async (req, res) => {
         await welcomeEmail(adminExisting.email, adminExisting.baseModelName, adminExisting.position);
 
         // Handle About Us banner document creation/update
-        let aboutUsBanner = await AboutUsBannerCollection.findOne({});
-        
+    let aboutUsBanner = await AboutUsBannerCollection.findOne({});
         if (!aboutUsBanner) {
+            const adminscount = await adminCollection.countDocuments();
+            if(adminscount>0){
+            const getalladmins = await adminCollection.find({},"_id");
+            const alladminids = getalladmins.map((admin)=>admin._id);
             // First admin - create new document with default values
             aboutUsBanner = await AboutUsBannerCollection.create({
-                admins: [adminExisting._id],
+                admins:alladminids,
             });
+        }
         } else {
             // Subsequent admins - add to existing document if not already present
             if (!aboutUsBanner.admins.includes(adminExisting._id)) {
