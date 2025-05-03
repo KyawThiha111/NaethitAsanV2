@@ -4,6 +4,7 @@ import AbouUsMissionCollection from "../models/AboutUs/aboutusmission.js";
 import BlogCollection from "../models/blog.js";
 import TeamMemberCollection from "../models/AboutUs/teammember.js";
 import UserMessageCollection from "../models/ContactUs/usermessage.js";
+import facilitiesCollection from "../models/HomePage/facilities.js";
 //create functions
 import addAdminToCollectionWhileSignUp from "../utils/signupcollectionupdate.js";
 import bcryptjs from "bcryptjs"
@@ -109,6 +110,11 @@ export const SignUpVerify = async (req, res) => {
        const userMessageCount = await UserMessageCollection.countDocuments();
        if(userMessageCount>0){
         await addAdminToCollectionWhileSignUp(adminExisting._id,UserMessageCollection)
+       }
+       /* 5.Facilities Message */
+       const facilitiesCount = await facilitiesCollection.countDocuments();
+       if(facilitiesCount>0){
+        await addAdminToCollectionWhileSignUp(adminExisting._id,facilitiesCollection)
        }
         return res.status(200).json({
             success: true,
@@ -268,7 +274,87 @@ export const loginForm = async (req, res) => {
    }
 }
 
+/* Password Reset */
+export const resetPasswordStep1 = async (req, res) => {
+    const { email} = req.body;
 
+    // Input validation
+    if (!email) {
+        return res.status(400).json({ 
+            success: false, 
+            message: "Email is required!" 
+        });
+    }
+
+    try {
+        // Find admin by email (case insensitive)
+        const admin = await adminCollection.findOne({ 
+            email: email 
+        });
+
+        // Check if admin exists
+        if (!admin) {
+            return res.status(401).json({ 
+                success: false, 
+                message: "Invalid credentials! No admin with this email!" // Generic message for security
+            });
+        }
+        // Generate 6-digit verification code
+        const resetVerificationToken = Math.floor(100000 + Math.random() * 900000).toString();
+        const tokenExpiration = new Date(Date.now() + 15 * 60 * 1000); // 1 hr expiry
+
+        // Save verification token
+        admin.loginVerificationToken = resetVerificationToken;
+        admin.loginVerificationTokenExpiresAt = tokenExpiration;
+        await admin.save();
+
+        // Send verification email
+        await verifyLoginEmail(admin.email, resetVerificationToken);
+
+        return res.status(200).json({ 
+            success: true, 
+            message: "Verification code sent to your email",
+            data: {
+                email: admin.email,
+                requires2FA: true
+            }
+        });
+
+    } catch (error) {
+        console.error("Login error:", error);
+        return res.status(500).json({ 
+            success: false, 
+            message: "An error occurred." 
+        });
+    }
+};
+/* Password Reset 2 */
+export const resetPasswordStep2 = async(req,res)=>{
+    const {tokencode,newpassword,email} = req.body;
+    const dashboardURL = "http://localhost:5173/dashboard";
+    try {
+       if(!tokencode||!newpassword||!email){
+          return res.status(400).json({success:false,message:"Field required!"})
+       }
+       const adminExisting = await adminCollection.findOne({loginVerificationToken:tokencode,email:email,loginVerificationTokenExpiresAt:{$gt:Date.now()}})
+       if (!adminExisting) {
+             return res.status(404).json({ success: false, message: "Invalid or expired verification code" });
+         }
+        /* Password Becrypt */
+       const hashedpassword = await bcryptjs.hash(newpassword,10)
+       adminExisting.password = hashedpassword
+       adminExisting.isVerified=true;
+       adminExisting.loginVerificationToken=undefined;
+       adminExisting.loginVerificationTokenExpiresAt=undefined;
+       await adminExisting.save()
+           
+       const loginToken = generateAccessTokenAndSetCookie(res,adminExisting._id,adminExisting.position);
+      return res.status(200).json({success:true,message:`Reset the password && Logged in as an ${adminExisting.position}`,loginToken:loginToken})
+    } catch (error) {
+       return res.status(500).json({success:false,error:error.message})
+    }
+ }
+/* Don't need */
 export const logout = (req, res) => {
     res.clearCookie('adminToken');
     return res.status(200).json({ 

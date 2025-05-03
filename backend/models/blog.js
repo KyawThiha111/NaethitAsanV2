@@ -7,31 +7,22 @@ const BlogSchema = new Schema({
     },
     titleen:{
         type:String,
-        maxLength:[250,"Title must not be longer than 80 characters."],
+        maxLength:[400,"Title must not be longer than 400 characters."],
         required:true
     },
     titlemy:{
         type:String,
-        maxLength:[250,"Title must not be longer than 80 characters."],
+        maxLength:[400,"Title must not be longer than 400 characters."],
         required:true
     },
     descriptionen:{
       type:String,
       required:true,
-      maxLength:[350,"Description must not be longer than 200 characters."]
+
     },
     descriptionmy:{
       type:String,
       required:true,
-      maxLength:[350,"Description must not be longer than 200 characters."]
-    },
-    blogen:{
-      type:String,
-      required:true
-    },
-    blogmy:{
-      type:String,
-      required:true
     },
     postdate:{
         type:Date,

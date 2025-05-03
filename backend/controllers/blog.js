@@ -20,56 +20,56 @@ export const CreateBlog = async (req, res) => {
   let filePath = null;
   try {
     const adminid = req.adminid;
-    const getalladmins = await adminCollection.find({},"_id");
-    const alladminids = getalladmins.map((admin)=>admin._id);
+    const getalladmins = await adminCollection.find({}, "_id");
+    const alladminids = getalladmins.map((admin) => admin._id);
     const {
       titleen,
       titlemy,
       descriptionen,
       descriptionmy,
-      blogen,
-      blogmy,
-      postdate,
       timelength,
       catagory,
     } = req.body;
 
-    // Validate required fields
+    // Validate required fields (removed postdate from required fields)
     const requiredFields = {
       titleen,
       titlemy,
       descriptionen,
       descriptionmy,
-      blogen,
-      blogmy,
-      postdate,
       timelength,
       catagory,
     };
-       // Set file path if file exists
-       //we will use it in the clear function
-       if (req.file) {
-        filePath = path.join(__dirname, "..", "public", "Blog", req.file.filename);
+
+    // Set file path if file exists
+    if (req.file) {
+      filePath = path.join(__dirname, "..", "public", "Blog", req.file.filename);
+    }
+
+    // Verify admin
+    const adminverified = await verifyAdmin(adminid);
+    if (!adminverified) {
+      if (filePath) {
+        const filename = path.basename(filePath);
+        const todeletePath = path.join("Blog", filename);
+        cleanUpFile(todeletePath);
       }
-       //verify admin
-    const adminverified = await verifyAdmin(adminid)
-    if(!adminverified){
-      const filename = path.basename(filePath);
-      const todeletePath = path.join("Blog", filename);
-     cleanUpFile(todeletePath);// delete the file
       return res.status(403).json({
-          success: false,
-          message: "Unauthorized - Invalid admin credentials"
+        success: false,
+        message: "Unauthorized - Invalid admin credentials",
       });
     }
+
     const missingFields = Object.entries(requiredFields)
       .filter(([_, value]) => !value)
       .map(([key]) => key);
 
     if (missingFields.length > 0) {
-       const filename = path.basename(filePath);
-       const todeletePath = path.join("Blog", filename);
-      cleanUpFile(todeletePath);// delete the file
+      if (filePath) {
+        const filename = path.basename(filePath);
+        const todeletePath = path.join("Blog", filename);
+        cleanUpFile(todeletePath);
+      }
       return res.status(400).json({
         success: false,
         message: "Fields required!",
@@ -82,11 +82,12 @@ export const CreateBlog = async (req, res) => {
       $or: [{ titleen: titleen }, { titlemy: titlemy }],
     });
     if (blogExist) {
-      const filename = path.basename(filePath);
-      const todeletePath = path.join("Blog", filename);
-     cleanUpFile(todeletePath);// delete the file
+      if (filePath) {
+        const filename = path.basename(filePath);
+        const todeletePath = path.join("Blog", filename);
+        cleanUpFile(todeletePath);
+      }
       return res.status(409).json({
-        // 409 Conflict is more appropriate
         success: false,
         message: "Post with this title already exists.",
       });
@@ -97,9 +98,7 @@ export const CreateBlog = async (req, res) => {
       titlemy,
       descriptionen,
       descriptionmy,
-      blogen,
-      blogmy,
-      postdate,
+      postdate: new Date(), // Automatically set current date/time
       timelength,
       catagory,
       admins: alladminids,
@@ -110,24 +109,28 @@ export const CreateBlog = async (req, res) => {
     const createdBlog = await BlogCollection.create(toUploadBlog);
 
     if (!createdBlog) {
-      const filename = path.basename(filePath);
-      const todeletePath = path.join("Blog", filename);
-     cleanUpFile(todeletePath);// delete the file
+      if (filePath) {
+        const filename = path.basename(filePath);
+        const todeletePath = path.join("Blog", filename);
+        cleanUpFile(todeletePath);
+      }
       return res.status(500).json({
         success: false,
         message: "Error while creating a blog!",
       });
     }
+
     return res.status(201).json({
       success: true,
       message: "Successfully added a blog!",
       blog: createdBlog,
     });
+
   } catch (error) {
     if (req.file) {
       const filename = path.basename(filePath);
       const todeletePath = path.join("Blog", filename);
-     cleanUpFile(todeletePath);// delete the file
+      cleanUpFile(todeletePath);
     }
     console.error("Blog creation error:", error);
     return res.status(500).json({
@@ -150,12 +153,9 @@ export const UpdateBlogPost = async (req, res) => {
       titlemy,
       descriptionen,
       descriptionmy,
-      blogen,
-      blogmy,
-      postdate,
       timelength,
       catagory,
-    } = req.body;
+    } = req.body; // Removed postdate from destructuring
 
     // Set file paths for cleanup
     if (req.file) {
@@ -167,15 +167,12 @@ export const UpdateBlogPost = async (req, res) => {
       }
     }
 
-    // Validate required fields
+    // Validate required fields (removed postdate from validation)
     const requiredFields = {
       titleen,
       titlemy,
       descriptionen,
       descriptionmy,
-      blogen,
-      blogmy,
-      postdate,
       timelength,
       catagory,
     };
@@ -185,9 +182,11 @@ export const UpdateBlogPost = async (req, res) => {
       .map(([key]) => key);
 
     if (missingFields.length > 0) {
-      const filename = path.basename(newFilePath);
-      const todeletePath = path.join("Blog", filename);
-     cleanUpFile(todeletePath);
+      if (newFilePath) {
+        const filename = path.basename(newFilePath);
+        const todeletePath = path.join("Blog", filename);
+        cleanUpFile(todeletePath);
+      }
       return res.status(400).json({ 
         success: false, 
         message: "Fields required!", 
@@ -198,9 +197,11 @@ export const UpdateBlogPost = async (req, res) => {
     // Verify admin first
     const adminverified = await verifyAdmin(adminid);
     if (!adminverified) {
-      const filename = path.basename(newFilePath);
-      const todeletePath = path.join("Blog", filename);
-     cleanUpFile(todeletePath);
+      if (newFilePath) {
+        const filename = path.basename(newFilePath);
+        const todeletePath = path.join("Blog", filename);
+        cleanUpFile(todeletePath);
+      }
       return res.status(403).json({
         success: false,
         message: "Unauthorized - Invalid admin credentials"
@@ -210,9 +211,11 @@ export const UpdateBlogPost = async (req, res) => {
     // Check if blog exists and admin has permission
     const existingBlog = await BlogCollection.findById(blogid);
     if (!existingBlog) {
-      const filename = path.basename(newFilePath);
-      const todeletePath = path.join("Blog", filename);
-     cleanUpFile(todeletePath);
+      if (newFilePath) {
+        const filename = path.basename(newFilePath);
+        const todeletePath = path.join("Blog", filename);
+        cleanUpFile(todeletePath);
+      }
       return res.status(404).json({ 
         success: false, 
         message: "Blog not found!" 
@@ -221,57 +224,30 @@ export const UpdateBlogPost = async (req, res) => {
 
     // Check if admin is in the admins array
     if (!existingBlog.admins.includes(adminid)) {
-      const filename = path.basename(newFilePath);
-      const todeletePath = path.join("Blog", filename);
-     cleanUpFile(todeletePath);
+      if (newFilePath) {
+        const filename = path.basename(newFilePath);
+        const todeletePath = path.join("Blog", filename);
+        cleanUpFile(todeletePath);
+      }
       return res.status(403).json({
         success: false,
         message: "Unauthorized! You don't have permission to update this blog!",
       });
     }
 
-    // Validate image if provided
-    if (req.file) {
-      const allowedMimeTypes = [
-        "image/jpeg",
-        "image/png",
-        "image/gif",
-        "image/webp"
-      ];
-      const ext = path.extname(req.file.originalname).toLowerCase();
-
-      if (!allowedMimeTypes.includes(req.file.mimetype) && ext !== ".jfif") {
-        const filename = path.basename(newFilePath);
-        const todeletePath = path.join("Blog", filename);
-       cleanUpFile(todeletePath);
-        return res.status(400).json({ 
-          success: false, 
-          message: "Invalid image format!" 
-        });
-      }
-    }
-
-    // Prepare update data
+    // Prepare update data - keep original postdate and add updatedAt
     const updateData = {
       titleen,
       titlemy,
       descriptionen,
       descriptionmy,
-      blogen,
-      blogmy,
-      postdate,
       timelength,
       catagory,
       ...(req.file && { img: `/public/Blog/${req.file.filename}` }),
-      updatedAt: Date.now() // Explicit update timestamp
+      updatedAt: new Date() // Set current timestamp for update
     };
 
-    // Add admin to admins array if not already present (optional)
-    if (!existingBlog.admins.includes(adminid)) {
-      updateData.$addToSet = { admins: adminid };
-    }
-
-    // Update the blog
+    // Update the blog - preserving original postdate
     const updatedBlog = await BlogCollection.findByIdAndUpdate(
       blogid,
       updateData,
@@ -279,9 +255,11 @@ export const UpdateBlogPost = async (req, res) => {
     );
 
     if (!updatedBlog) {
-      const filename = path.basename(newFilePath);
-      const todeletePath = path.join("Blog", filename);
-     cleanUpFile(todeletePath);
+      if (newFilePath) {
+        const filename = path.basename(newFilePath);
+        const todeletePath = path.join("Blog", filename);
+        cleanUpFile(todeletePath);
+      }
       throw new Error("Failed to update blog");
     }
 
@@ -289,7 +267,7 @@ export const UpdateBlogPost = async (req, res) => {
     if (oldFilePath) {
       const filename = path.basename(oldFilePath);
       const todeletePath = path.join("Blog", filename);
-     cleanUpFile(todeletePath);
+      cleanUpFile(todeletePath);
     }
 
     return res.status(200).json({
@@ -300,10 +278,10 @@ export const UpdateBlogPost = async (req, res) => {
 
   } catch (error) {
     // Clean up new file if error occurred
-    if(newFilePath){
-    const filename = path.basename(newFilePath);
-    const todeletePath = path.join("Blog", filename);
-   cleanUpFile(todeletePath);
+    if (newFilePath) {
+      const filename = path.basename(newFilePath);
+      const todeletePath = path.join("Blog", filename);
+      cleanUpFile(todeletePath);
     }
     console.error("Blog update error:", error);
     
@@ -315,24 +293,12 @@ export const UpdateBlogPost = async (req, res) => {
   }
 };
 
-//getallblog
+// getallblog
 export const GetAllBlog = async (req, res) => {
   try {
-    const { lang = "en" } = req.query; // Default to English if not specified
+    const { lang } = req.query;
 
-    // Validate language parameter
-    if (lang !== "en" && lang !== "my") {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid language. Use lang=en or lang=my",
-      });
-    }
-
-    // Determine which fields to select based on language
-    const projection = {
-      [`title${lang}`]: 1,
-      [`description${lang}`]: 1,
-      [`blog${lang}`]: 1,
+    let projection = {
       postdate: 1,
       timelength: 1,
       catagory: 1,
@@ -342,10 +308,25 @@ export const GetAllBlog = async (req, res) => {
       updatedAt: 1,
     };
 
-    // Get all blogs with the specified language fields
+    if (lang === "en" || lang === "my") {
+      projection[`title${lang}`] = 1;
+      projection[`description${lang}`] = 1;
+    } else if (lang === undefined) {
+      // No lang specified, return both languages
+      projection["titleen"] = 1;
+      projection["descriptionen"] = 1;
+      projection["titlemy"] = 1;
+      projection["descriptionmy"] = 1;
+    } else {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid language. Use lang=en or lang=my",
+      });
+    }
+
     const blogs = await BlogCollection.find({}, projection)
-      .sort({ postdate: -1 }) // Sort by newest first
-      .populate("admins", "adminname email position"); // Populate admin info
+      .sort({ postdate: -1 })
+      .populate("admins", "adminname email position");
 
     if (!blogs || blogs.length === 0) {
       return res.status(404).json({
@@ -354,21 +335,33 @@ export const GetAllBlog = async (req, res) => {
       });
     }
 
-    // Format the response
     const formattedBlogs = blogs.map((blog) => {
       const formatted = {
         id: blog._id,
-        title: blog[`title${lang}`],
-        description: blog[`description${lang}`],
-        content: blog[`blog${lang}`],
         postdate: blog.postdate,
         timelength: blog.timelength,
         category: blog.catagory,
         image: `${BASE_URL}${blog.img}`,
-        admins: blog.admins, // Include the admins array
+        admins: blog.admins,
         createdAt: blog.createdAt,
         updatedAt: blog.updatedAt
       };
+
+      if (lang === "en" || lang === "my") {
+        formatted.title = blog[`title${lang}`];
+        formatted.description = blog[`description${lang}`];
+      } else {
+        // Include both if no lang specified
+        formatted.title = {
+          en: blog.titleen,
+          my: blog.titlemy
+        };
+        formatted.description = {
+          en: blog.descriptionen,
+          my: blog.descriptionmy
+        };
+      }
+
       return formatted;
     });
 
@@ -388,33 +381,14 @@ export const GetAllBlog = async (req, res) => {
   }
 };
 
-//Get Single Blog
+
+// getsingleblog
 export const GetSingleBlog = async (req, res) => {
   try {
     const { id } = req.params;
-    const { lang = "en" } = req.query;
+    const { lang } = req.query;
 
-    // Validate blog ID
-    if (!id) {
-      return res.status(400).json({
-        success: false,
-        message: "Blog ID is required",
-      });
-    }
-
-    // Validate language parameter
-    if (lang !== "en" && lang !== "my") {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid language. Use lang=en or lang=my",
-      });
-    }
-
-    // Define which fields to select
-    const projection = {
-      [`title${lang}`]: 1,
-      [`description${lang}`]: 1,
-      [`blog${lang}`]: 1,
+    let projection = {
       postdate: 1,
       timelength: 1,
       catagory: 1,
@@ -424,9 +398,26 @@ export const GetSingleBlog = async (req, res) => {
       updatedAt: 1,
     };
 
-    // Find the blog by ID
-    const blog = await BlogCollection.findById(id, projection)
-      .populate("admins", "adminname email position");
+    if (lang === "en" || lang === "my") {
+      projection[`title${lang}`] = 1;
+      projection[`description${lang}`] = 1;
+    } else if (lang === undefined) {
+      // No lang specified, return both languages
+      projection["titleen"] = 1;
+      projection["descriptionen"] = 1;
+      projection["titlemy"] = 1;
+      projection["descriptionmy"] = 1;
+    } else {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid language. Use lang=en or lang=my",
+      });
+    }
+
+    const blog = await BlogCollection.findById(id, projection).populate(
+      "admins",
+      "adminname email position"
+    );
 
     if (!blog) {
       return res.status(404).json({
@@ -437,9 +428,6 @@ export const GetSingleBlog = async (req, res) => {
 
     const formatted = {
       id: blog._id,
-      title: blog[`title${lang}`],
-      description: blog[`description${lang}`],
-      content: blog[`blog${lang}`],
       postdate: blog.postdate,
       timelength: blog.timelength,
       category: blog.catagory,
@@ -448,6 +436,20 @@ export const GetSingleBlog = async (req, res) => {
       createdAt: blog.createdAt,
       updatedAt: blog.updatedAt,
     };
+
+    if (lang === "en" || lang === "my") {
+      formatted.title = blog[`title${lang}`];
+      formatted.description = blog[`description${lang}`];
+    } else {
+      formatted.title = {
+        en: blog.titleen,
+        my: blog.titlemy,
+      };
+      formatted.description = {
+        en: blog.descriptionen,
+        my: blog.descriptionmy,
+      };
+    }
 
     return res.status(200).json({
       success: true,
@@ -464,87 +466,96 @@ export const GetSingleBlog = async (req, res) => {
   }
 };
 
-/* Get based on cata */
+
+// GET /api/pages/blogsoncata?catagory=Events&lang=en
 export const GetBlogsByCategory = async (req, res) => {
   try {
-    const { lang = 'en', catagory = 'All', page = 1, limit = 10 } = req.query;
+    const { catagory, lang } = req.query;
 
-    // Validate language
-    if (!['en', 'my'].includes(lang)) {
+    // Validate language if provided
+    if (lang && !['en', 'my'].includes(lang)) {
       return res.status(400).json({
         success: false,
         message: "Invalid language parameter. Use 'en' or 'my'"
       });
     }
 
-    // Validate category
-    const validCategories = ["All", "Community", "Volunteers", "Research", "Partnerships"];
-    if (!validCategories.includes(catagory)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid category",
-        validCategories
-      });
-    }
-
-    // Build query filter
+    // Build category filter
     const filter = {};
-    if (catagory !== 'All') {
+    if (catagory && catagory !== 'All') {
       filter.catagory = catagory;
     }
 
-    // Set up projection based on language
+    // Fields to retrieve - using 'img' to match your database field
     const projection = {
-      [`title${lang}`]: 1,
-      [`description${lang}`]: 1,
-      [`blog${lang}`]: 1,
+      titleen: 1,
+      titlemy: 1,
+      descriptionen: 1,
+      descriptionmy: 1,
       catagory: 1,
-      img: 1,
+      img: 1,  // Changed from 'image' to 'img' to match your schema
       postdate: 1,
       timelength: 1,
       admins: 1,
-      createdAt: 1
+      createdAt: 1,
+      updatedAt: 1
     };
 
-    // Calculate pagination
-    const startIndex = (page - 1) * limit;
-    const total = await BlogCollection.countDocuments(filter);
-
-    // Get paginated results
     const blogs = await BlogCollection.find(filter, projection)
       .sort({ postdate: -1 })
-      .skip(startIndex)
-      .limit(parseInt(limit))
       .populate('admins', 'adminname email');
 
     if (!blogs || blogs.length === 0) {
       return res.status(404).json({
         success: false,
-        message: `No blogs found in ${catagory} category`
+        message: `No blogs found${catagory ? ` in ${catagory} category` : ''}`
       });
     }
 
-    // Format response
-    const formattedBlogs = blogs.map(blog => ({
-      id: blog._id,
-      title: blog[`title${lang}`],
-      description: blog[`description${lang}`],
-      content: blog[`blog${lang}`],
-      category: blog.catagory,
-      image: `${BASE_URL}${blog.img}`,
-      postDate: blog.postdate,
-      timeLength: blog.timelength,
-      authors: blog.admins,
-      createdAt: blog.createdAt
-    }));
+    // Format response - using 'img' to match your schema
+    const formattedBlogs = blogs.map(blog => {
+      const base = {
+        id: blog._id,
+        catagory: blog.catagory,
+        image: blog.img ? `${BASE_URL}${blog.img}` : null, // Changed from blog.image to blog.img
+        postdate: blog.postdate,
+        timelength: blog.timelength,
+        authors: blog.admins,
+        createdAt: blog.createdAt,
+        updatedAt: blog.updatedAt
+      };
+
+      if (lang === 'en') {
+        return {
+          ...base,
+          title: blog.titleen || null,
+          description: blog.descriptionen || null
+        };
+      } else if (lang === 'my') {
+        return {
+          ...base,
+          title: blog.titlemy || null,
+          description: blog.descriptionmy || null
+        };
+      } else {
+        return {
+          ...base,
+          title: {
+            en: blog.titleen || null,
+            my: blog.titlemy || null
+          },
+          description: {
+            en: blog.descriptionen || null,
+            my: blog.descriptionmy || null
+          }
+        };
+      }
+    });
 
     return res.status(200).json({
       success: true,
       count: blogs.length,
-      total,
-      totalPages: Math.ceil(total / limit),
-      currentPage: parseInt(page),
-      category: catagory,
+      catagory: catagory || 'All',
       blogs: formattedBlogs
     });
 
@@ -552,11 +563,11 @@ export const GetBlogsByCategory = async (req, res) => {
     console.error('Get blogs by category error:', error);
     return res.status(500).json({
       success: false,
-      message: "Internal server error",
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+      message: "Internal server error"
     });
   }
 };
+
 
 export const DeleteBlog = async (req, res) => {
   try {
@@ -618,109 +629,6 @@ export const DeleteBlog = async (req, res) => {
   }
 };
 
-/* For Dashboard */
-//Get All for Displaying
-export const GetAllBlogsBothLanguages = async (req, res) => {
-  try {
-    // Fetch all blog documents
-    const blogs = await BlogCollection.find({})
-      .sort({ postdate: -1 })
-      .populate("admins", "adminname email position");
-
-    if (!blogs || blogs.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: "No blogs found",
-      });
-    }
-
-    // Format the response to include both languages
-    const formattedBlogs = blogs.map((blog) => ({
-      id: blog._id,
-      titleen: blog.titleen,
-      titlemy: blog.titlemy,
-      descriptionen: blog.descriptionen,
-      descriptionmy: blog.descriptionmy,
-      blogen: blog.blogen,
-      blogmy: blog.blogmy,
-      postdate: blog.postdate,
-      timelength: blog.timelength,
-      category: blog.catagory,
-      image: blog.img ? `${BASE_URL}${blog.img}` : null,
-      admins: blog.admins,
-      createdAt: blog.createdAt,
-      updatedAt: blog.updatedAt,
-    }));
-
-    return res.status(200).json({
-      success: true,
-      count: formattedBlogs.length,
-      blogs: formattedBlogs,
-    });
-  } catch (error) {
-    console.error("Error fetching blogs in both languages:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error",
-      error: process.env.NODE_ENV === "development" ? error.message : undefined,
-    });
-  }
-};
-
-//Get each for updating
-export const GetSingleBlogForUpdate = async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    // Check if ID is provided
-    if (!id) {
-      return res.status(400).json({
-        success: false,
-        message: "Blog ID is required",
-      });
-    }
-
-    // Fetch the blog by ID
-    const blog = await BlogCollection.findById(id).populate("admins", "adminname email position");
-
-    if (!blog) {
-      return res.status(404).json({
-        success: false,
-        message: "Blog not found",
-      });
-    }
-
-    // Format the response with both languages
-    const blogData = {
-      id: blog._id,
-      titleen: blog.titleen,
-      titlemy: blog.titlemy,
-      descriptionen: blog.descriptionen,
-      descriptionmy: blog.descriptionmy,
-      blogen: blog.blogen,
-      blogmy: blog.blogmy,
-      postdate: blog.postdate,
-      timelength: blog.timelength,
-      category: blog.catagory,
-      image: blog.img ? `${BASE_URL}${blog.img}` : null,
-      admins: blog.admins,
-      createdAt: blog.createdAt,
-      updatedAt: blog.updatedAt,
-    };
-
-    return res.status(200).json({
-      success: true,
-      blog: blogData,
-    });
-  } catch (error) {
-    console.error("Error fetching single blog:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error",
-      error: process.env.NODE_ENV === "development" ? error.message : undefined,
-    });
-  }
-};
 
 
 
