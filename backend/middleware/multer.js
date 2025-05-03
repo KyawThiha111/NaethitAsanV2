@@ -56,5 +56,8 @@ let destinatedfile = path.join(__dirname,"..","public")
   { name: "bannerbgimg", maxCount: 1 },   // For banner background image
   { name: "backgroundblogimg", maxCount: 1 }  // For blog background image
 ]);
-
+//Team Member
 export const uploadTeamMember = multer({storage:getStorage("Aboutus"),fileFilter:imageFilter,limits:{fileSize:5*1024*1024}})
+
+// Facilities
+export const uploadFacilities = multer({storage:getStorage("Homepage"),fileFilter:imageFilter,limits:{fileSize:5*1024*1024}})
