@@ -32,6 +32,7 @@ const server = express()
 const allowedOrigins = [
     'http://localhost:5173',
     'https://nae-thit-dashboard-7ghi.vercel.app',
+    "https://nae-thit-admin.vercel.app/"
   ];
 
   server.use(cors({
