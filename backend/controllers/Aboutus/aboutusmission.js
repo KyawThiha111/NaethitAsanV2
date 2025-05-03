@@ -55,45 +55,142 @@ try {
     return res.status(500).json({success:true,message:"Error while creating a mission",error:process.env.NODE_ENV==="development"?error.message:undefined})
 }
 }
-/* Read */
+
 export const getAllMissions = async (req, res) => {
     try {
-        const { lang = 'en' } = req.query;
-        
-        if (!['en', 'my'].includes(lang)) {
-            return res.status(400).json({
-                success: false,
-                message: "Invalid language. Use 'en' or 'my'"
-            });
-        }
-
-        const missions = await AbouUsMissionCollection.find()
-            .populate('admins', 'adminname position')
-            .lean();
-
-        const formattedMissions = missions.map(mission => ({
+      const { lang } = req.query;
+  
+      if (lang && !['en', 'my'].includes(lang)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid language. Use 'en' or 'my'",
+        });
+      }
+  
+      const missions = await AbouUsMissionCollection.find()
+        .populate('admins', 'adminname position')
+        .lean();
+  
+      const formattedMissions = missions.map((mission) => {
+        if (lang === 'en') {
+          return {
             _id: mission._id,
-            title: lang === 'en' ? mission.titleen : mission.titlemy,
-            mission: lang === 'en' ? mission.missionen : mission.missionmy,
+            title: mission.titleen,
+            mission: mission.missionen,
             createdAt: mission.createdAt,
-            admins: mission.admins
-        }));
-
-        return res.status(200).json({
-            success: true,
-            data: formattedMissions
-        });
-
+            admins: mission.admins,
+          };
+        } else if (lang === 'my') {
+          return {
+            _id: mission._id,
+            title: mission.titlemy,
+            mission: mission.missionmy,
+            createdAt: mission.createdAt,
+            admins: mission.admins,
+          };
+        } else {
+          // Return both languages
+          return {
+            _id: mission._id,
+            title: {
+              en: mission.titleen,
+              my: mission.titlemy,
+            },
+            mission: {
+              en: mission.missionen,
+              my: mission.missionmy,
+            },
+            createdAt: mission.createdAt,
+            admins: mission.admins,
+          };
+        }
+      });
+  
+      return res.status(200).json({
+        success: true,
+        data: formattedMissions,
+      });
     } catch (error) {
-        console.error("Get missions error:", error);
-        return res.status(500).json({
-            success: false,
-            message: "Error fetching missions",
-            error: process.env.NODE_ENV === "development" ? error.message : undefined
-        });
+      console.error("Get missions error:", error);
+      return res.status(500).json({
+        success: false,
+        message: "Error fetching missions",
+        error: process.env.NODE_ENV === 'development' ? error.message : undefined,
+      });
     }
-};
-
+  };
+/* Get Each Mission */
+export const getEachMission = async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { lang } = req.query;
+  
+      if (lang && !['en', 'my'].includes(lang)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid language. Use 'en' or 'my'",
+        });
+      }
+  
+      const mission = await AbouUsMissionCollection.findById(id)
+        .populate('admins', 'adminname position')
+        .lean();
+  
+      if (!mission) {
+        return res.status(404).json({
+          success: false,
+          message: 'Mission not found',
+        });
+      }
+  
+      let formattedMission;
+  
+      if (lang === 'en') {
+        formattedMission = {
+          _id: mission._id,
+          title: mission.titleen,
+          mission: mission.missionen,
+          createdAt: mission.createdAt,
+          admins: mission.admins,
+        };
+      } else if (lang === 'my') {
+        formattedMission = {
+          _id: mission._id,
+          title: mission.titlemy,
+          mission: mission.missionmy,
+          createdAt: mission.createdAt,
+          admins: mission.admins,
+        };
+      } else {
+        formattedMission = {
+          _id: mission._id,
+          title: {
+            en: mission.titleen,
+            my: mission.titlemy,
+          },
+          mission: {
+            en: mission.missionen,
+            my: mission.missionmy,
+          },
+          createdAt: mission.createdAt,
+          admins: mission.admins,
+        };
+      }
+  
+      return res.status(200).json({
+        success: true,
+        data: formattedMission,
+      });
+    } catch (error) {
+      console.error("Get mission error:", error);
+      return res.status(500).json({
+        success: false,
+        message: "Error fetching mission",
+        error: process.env.NODE_ENV === 'development' ? error.message : undefined,
+      });
+    }
+  };
+  
 /* Update */
 export const updateMission = async (req, res) => {
     try {

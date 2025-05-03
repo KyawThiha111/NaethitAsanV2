@@ -210,34 +210,34 @@ export const updateTeamMember = async(req,res)=>{
         });
     }
 }
-
-//getallMmebers
+/* Get all members */
 export const GetAllMembers = async (req, res) => {
   try {
-    const { lang = "en" } = req.query; // Default to English if not specified
+    const { lang } = req.query;
 
-    // Validate language parameter
-    if (lang !== "en" && lang !== "my") {
+    // Validate if lang is provided and invalid
+    if (lang && lang !== "en" && lang !== "my") {
       return res.status(400).json({
         success: false,
         message: "Invalid language. Use lang=en or lang=my",
       });
     }
 
-    // Determine which fields to select based on language
+    // Always get all language fields so we can format dynamically
     const projection = {
-      memberphoto:1,
-      [`name_${lang}`]: 1,
-      [`position_${lang}`]: 1,
+      memberphoto: 1,
+      name_en: 1,
+      name_my: 1,
+      position_en: 1,
+      position_my: 1,
       admins: 1,
       createdAt: 1,
       updatedAt: 1,
     };
 
-    // Get all blogs with the specified language fields
-    const members= await TeamMemberCollection.find({}, projection)
-      .sort({ postdate: -1 }) // Sort by newest first
-      .populate("admins", "adminname email position"); // Populate admin info
+    const members = await TeamMemberCollection.find({}, projection)
+      .sort({ createdAt: -1 }) // Newest first
+      .populate("admins", "adminname email position");
 
     if (!members || members.length === 0) {
       return res.status(404).json({
@@ -246,28 +246,136 @@ export const GetAllMembers = async (req, res) => {
       });
     }
 
-    // Format the response
-    const formattedBlogs = members.map((member) => {
-      const formatted = {
+    const formattedMembers = members.map((member) => {
+      const base = {
         id: member._id,
-        name: member[`name_${lang}`],
-        position: member[`position${lang}`],
         photo: `${BASE_URL}${member.memberphoto}`,
-        admins: member.admins, // Include the admins array
+        admins: member.admins,
         createdAt: member.createdAt,
-        updatedAt: member.updatedAt
+        updatedAt: member.updatedAt,
       };
-      return formatted;
+
+      // Return according to lang query
+      if (lang === "en") {
+        return {
+          ...base,
+          name: member.name_en,
+          position: member.position_en,
+        };
+      } else if (lang === "my") {
+        return {
+          ...base,
+          name: member.name_my,
+          position: member.position_my,
+        };
+      } else {
+        // Return both
+        return {
+          ...base,
+          name: {
+            en: member.name_en,
+            my: member.name_my,
+          },
+          position: {
+            en: member.position_en,
+            my: member.position_my,
+          },
+        };
+      }
     });
 
     return res.status(200).json({
       success: true,
-      count: formattedBlogs.length,
-      blogs: formattedBlogs,
+      count: formattedMembers.length,
+      members: formattedMembers,
     });
 
   } catch (error) {
     console.error("Get Members error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined,
+    });
+  }
+};
+
+export const GetSingleMember = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { lang } = req.query;
+
+    // Validate language query
+    if (lang && lang !== "en" && lang !== "my") {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid language. Use lang=en or lang=my",
+      });
+    }
+
+    // Always fetch all language fields
+    const member = await TeamMemberCollection.findById(id, {
+      memberphoto: 1,
+      name_en: 1,
+      name_my: 1,
+      position_en: 1,
+      position_my: 1,
+      admins: 1,
+      createdAt: 1,
+      updatedAt: 1,
+    }).populate("admins", "adminname email position");
+
+    if (!member) {
+      return res.status(404).json({
+        success: false,
+        message: "Member not found",
+      });
+    }
+
+    const base = {
+      id: member._id,
+      photo: `${BASE_URL}${member.memberphoto}`,
+      admins: member.admins,
+      createdAt: member.createdAt,
+      updatedAt: member.updatedAt,
+    };
+
+    // Format based on lang query
+    let formattedMember;
+    if (lang === "en") {
+      formattedMember = {
+        ...base,
+        name: member.name_en,
+        position: member.position_en,
+      };
+    } else if (lang === "my") {
+      formattedMember = {
+        ...base,
+        name: member.name_my,
+        position: member.position_my,
+      };
+    } else {
+      // Return both languages
+      formattedMember = {
+        ...base,
+        name: {
+          en: member.name_en,
+          my: member.name_my,
+        },
+        position: {
+          en: member.position_en,
+          my: member.position_my,
+        },
+      };
+    }
+
+    return res.status(200).json({
+      success: true,
+      member: formattedMember,
+    });
+
+  } catch (error) {
+    console.error("Get Single Member error:", error);
     return res.status(500).json({
       success: false,
       message: "Internal server error",
