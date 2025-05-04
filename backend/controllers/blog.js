@@ -568,6 +568,128 @@ export const GetBlogsByCategory = async (req, res) => {
   }
 };
 
+/* Get Blog Pagination */
+export const GetBlogsPagination = async (req, res) => {
+  try {
+    const { catagory, lang, page = 1 } = req.query; // Add page parameter
+    const perPage = 6; // Items per page
+
+    // Validate language if provided
+    if (lang && !['en', 'my'].includes(lang)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid language parameter. Use 'en' or 'my'"
+      });
+    }
+
+    // Validate page number
+    const pageNumber = parseInt(page);
+    if(isNaN(pageNumber)){
+      return res.status(400).json({
+        success: false,
+        message: "Invalid page number"
+      });
+    }
+
+    // Build category filter
+    const filter = {};
+    if (catagory && catagory !== 'All') {
+      filter.catagory = catagory;
+    }
+
+    // Fields to retrieve
+    const projection = {
+      titleen: 1,
+      titlemy: 1,
+      descriptionen: 1,
+      descriptionmy: 1,
+      catagory: 1,
+      img: 1,
+      postdate: 1,
+      timelength: 1,
+      admins: 1,
+      createdAt: 1,
+      updatedAt: 1
+    };
+
+    // Get total count for pagination info
+    const totalBlogs = await BlogCollection.countDocuments(filter);
+
+    // Calculate total pages
+    const totalPages = Math.ceil(totalBlogs / perPage);
+
+    // Get paginated blogs
+    const blogs = await BlogCollection.find(filter, projection)
+      .sort({ postdate: -1 })
+      .skip((pageNumber - 1) * perPage)
+      .limit(perPage)
+      .populate('admins', 'adminname email');
+
+    if (!blogs || blogs.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: `No blogs found${catagory ? ` in ${catagory} category` : ''}`
+      });
+    }
+
+    // Format response
+    const formattedBlogs = blogs.map(blog => {
+      const base = {
+        id: blog._id,
+        catagory: blog.catagory,
+        image: blog.img ? `${BASE_URL}${blog.img}` : null,
+        postdate: blog.postdate,
+        timelength: blog.timelength,
+        authors: blog.admins,
+        createdAt: blog.createdAt,
+        updatedAt: blog.updatedAt
+      };
+
+      if (lang === 'en') {
+        return {
+          ...base,
+          title: blog.titleen || null,
+          description: blog.descriptionen || null
+        };
+      } else if (lang === 'my') {
+        return {
+          ...base,
+          title: blog.titlemy || null,
+          description: blog.descriptionmy || null
+        };
+      } else {
+        return {
+          ...base,
+          title: {
+            en: blog.titleen || null,
+            my: blog.titlemy || null
+          },
+          description: {
+            en: blog.descriptionen || null,
+            my: blog.descriptionmy || null
+          }
+        };
+      }
+    });
+
+    return res.status(200).json({
+      success: true,
+      count: formattedBlogs.length,
+      total: totalBlogs,
+      totalPages: totalPages,
+      currentPage: pageNumber,
+      catagory: catagory || 'All',
+      blogs: formattedBlogs
+    });
+
+  } catch (error) {
+    console.error('Get blogs by category error:', error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error"
+    });
+  }
+};
 
 export const DeleteBlog = async (req, res) => {
   try {
