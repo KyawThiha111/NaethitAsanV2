@@ -177,7 +177,7 @@ export const UpdateAboutBanner = async (req, res) => {
     console.error("Update error:", error);
     return res.status(500).json({
       success: false,
-      message: "Internal server error",
+      message: `Internal server error ${error.message}`,
       error: process.env.NODE_ENV === "development" ? error.message : undefined,
     });
   }
