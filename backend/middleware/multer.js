@@ -56,6 +56,17 @@ let destinatedfile = path.join(__dirname,"..","public")
   { name: "bannerbgimg", maxCount: 1 },   // For banner background image
   { name: "backgroundblogimg", maxCount: 1 }  // For blog background image
 ]);
+
+/* Services Page */
+/* Services */
+export const uploadServices = multer({
+  storage: getStorage("Services"),  // Saves to /public/Aboutus/
+  fileFilter: imageFilter,
+  limits: { fileSize: 10 * 1024 * 1024 }  // 5MB limit
+}).fields([
+  { name: "img", maxCount: 1 },   // For banner background image
+  { name: "logo", maxCount: 1 }  // For blog background image
+]);
 //Team Member
 export const uploadTeamMember = multer({storage:getStorage("Aboutus"),fileFilter:imageFilter,limits:{fileSize:5*1024*1024}})
 

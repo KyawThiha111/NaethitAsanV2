@@ -25,6 +25,8 @@ import AboutMissionRoute from "./routes/Aboutus/aboutmission.js";
 import TeamMemberRouters from "./routes/Aboutus/teammember.js";
 import usermessageRouter from "./routes/Contactus/usermessage.js";
 import FacilityRouter from "./routes/Homepage/facilities.js";
+import ServicesRoutes from "./routes/Services/services.js";
+import servicesCollection from "./models/OurServices/services.js";
 const server = express()
 
 /* Cors */
@@ -64,6 +66,7 @@ server.use("/api/pages",AboutBannerRouter)
 server.use("/api/pages",AboutMissionRoute)
 server.use("/api/pages",TeamMemberRouters);
 server.use("/api/pages",usermessageRouter)
+server.use("/api/pages",ServicesRoutes)
 /* Home Page */
 server.use("/api/pages",FacilityRouter)
 server.listen(process.env.PORT,()=>{
