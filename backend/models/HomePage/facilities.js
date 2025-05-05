@@ -2,19 +2,29 @@ import { Schema,model } from "mongoose";
 import mongoose from "mongoose";
 
 const facilitiesSchema = new Schema({
-    clinicname:{
+    clinicname_en:{
+        type:String,
+        required:true,
+        unique:true
+    },
+    clinicname_my:{
+        type:String,
+        required:true,
+        unique:true
+    },
+    openinghr_en:{
         type:String,
         required:true,
         unique:false
     },
-    openinghr:{
+    openinghr_my:{
         type:String,
         required:true,
         unique:false
     },
-    location:{
+    mapurl:{
     type:String,
-    required:true,
+    required:true
     },
     photo:{
        type:String,

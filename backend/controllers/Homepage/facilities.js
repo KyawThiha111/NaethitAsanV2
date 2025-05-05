@@ -19,7 +19,7 @@ export const CreateFacility = async (req, res) => {
     const getalladmins = await adminCollection.find({}, "_id");
     const alladminids = getalladmins.map((admin) => admin._id);
 
-    const { clinicname, openinghr,location } = req.body;
+    const { clinicname_en,clinicname_my,openinghr_en,openinghr_my,mapurl } = req.body;
 
     // Handle uploaded image
     if (req.file) {
@@ -38,21 +38,30 @@ export const CreateFacility = async (req, res) => {
       });
     }
 
-    // Validation
-    if (!clinicname || !openinghr ||!location || !req.file) {
-      if (filePath) {
-        cleanUpFile(path.join("Homepage", path.basename(filePath)));
-      }
-      return res.status(400).json({
-        success: false,
-        message: "All fields are required: clinicname, openinghr, photo",
-      });
-    }
+    //Fields Validation
+    const requiredFields = {clinicname_en,clinicname_my,openinghr_en,openinghr_my,mapurl};
+     const missingFields = Object.entries(requiredFields)
+          .filter(([_, value]) => !value)
+          .map(([key]) => key);
+    
+        if (missingFields.length > 0) {
+          // Clean up uploaded files if validation fails
+          if (filePath) {
+            cleanUpFile(path.join("Homepage", path.basename(filePath)));
+          }
+          return res.status(400).json({
+            success: false,
+            message: "Fields required!",
+            missingFields,
+          });
+        }
 
     const toUploadFacility = {
-      clinicname,
-      openinghr,
-      location,
+      clinicname_en,
+      clinicname_my,
+      openinghr_en,
+      openinghr_my,
+      mapurl,
       photo: `/public/Homepage/${req.file.filename}`,
       admins: alladminids,
     };
@@ -95,7 +104,7 @@ export const UpdateFacility = async (req, res) => {
     try {
         const { id } = req.params; // Facility ID from URL params
         const adminid = req.adminid; // Admin ID from auth middleware
-        const { clinicname, openinghr,location } = req.body; // Required fields from request body
+        const { clinicname_en,clinicname_my,openinghr_en,openinghr_my,mapurl } = req.body; // Required fields from request body
 
         // Handle new uploaded file if exists
         if (req.file) {
@@ -117,11 +126,8 @@ export const UpdateFacility = async (req, res) => {
                 message: "Unauthorized to update facility! Login first!"
             });
         }
-
-        /* ====================== */
         /* 2. REQUIRED FIELD CHECK */
-        /* ====================== */
-        const requiredFields = { clinicname, openinghr,location };
+        const requiredFields = {clinicname_en,clinicname_my,openinghr_en,openinghr_my,mapurl};
         const missingFields = Object.entries(requiredFields)
             .filter(([_, value]) => !value)
             .map(([key]) => key);
@@ -181,9 +187,11 @@ export const UpdateFacility = async (req, res) => {
         /* 6. PREPARE UPDATE DATA */
         /* ====================== */
         const updateData = {
-            clinicname,
-            openinghr,
-            location,
+            clinicname_en,
+            clinicname_my,
+            openinghr_en,
+            openinghr_my,
+            mapurl,
             ...(req.file && { photo: `/public/Homepage/${req.file.filename}` }),
             updatedAt: Date.now()
         };
@@ -246,16 +254,23 @@ export const UpdateFacility = async (req, res) => {
 
 export const GetAllFacilities = async (req, res) => {
     try {
-        const adminid = req.adminid;
-        /* ====================== */
-        /* 2. FETCH FACILITIES DATA */
-        /* ====================== */
-        const facilities = await facilitiesCollection.find({}).sort({ createdAt: -1 });
-        // Only get facilities where current admin has permissions}).sort({ createdAt: -1 }); // Newest first
-
-        /* ====================== */
-        /* 3. SUCCESS RESPONSE */
-        /* ====================== */
+        const {lang} = req.query;
+        let projection = {
+            photo:1,
+            mapurl:1,
+            admins: 1,
+        }
+        /* Configure Language */
+        if(lang==="my"||lang==="en"){
+            projection[`clinicname_${lang}`] = 1;
+            projection[`openinghr_${lang}`] = 1
+        }else if(lang===undefined){
+            projection["clinicname_en"] = 1;
+            projection["clinicname_my"] = 1;
+            projection["openinghr_en"] = 1;
+            projection["openinghr_my"] = 1;
+        }
+        const facilities = await facilitiesCollection.find({},projection).sort({ createdAt: -1 });
         return res.status(200).json({
             success: true,
             count: facilities.length,
