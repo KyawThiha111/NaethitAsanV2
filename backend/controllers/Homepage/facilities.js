@@ -254,27 +254,49 @@ export const UpdateFacility = async (req, res) => {
 
 export const GetAllFacilities = async (req, res) => {
     try {
-        const {lang} = req.query;
+        const { lang } = req.query;
         let projection = {
-            photo:1,
-            mapurl:1,
+            photo: 1,
+            mapurl: 1,
             admins: 1,
-        }
+        };
+
         /* Configure Language */
-        if(lang==="my"||lang==="en"){
+        if (lang === "my" || lang === "en") {
             projection[`clinicname_${lang}`] = 1;
-            projection[`openinghr_${lang}`] = 1
-        }else if(lang===undefined){
+            projection[`openinghr_${lang}`] = 1;
+        } else if (lang === undefined) {
             projection["clinicname_en"] = 1;
             projection["clinicname_my"] = 1;
             projection["openinghr_en"] = 1;
             projection["openinghr_my"] = 1;
         }
-        const facilities = await facilitiesCollection.find({},projection).sort({ createdAt: -1 });
+
+        const facilities = await facilitiesCollection.find({}, projection).sort({ createdAt: -1 });
+
+        // Format the response to remove _en/_my suffixes and keep only generic fields
+        const formattedFacilities = facilities.map(facility => {
+            const facilityObj = facility.toObject();
+            
+            if (lang === "my" || lang === "en") {
+                return {
+                    _id: facilityObj._id,
+                    clinicname: facilityObj[`clinicname_${lang}`],
+                    openinghr: facilityObj[`openinghr_${lang}`],
+                    photo: facilityObj.photo,
+                    mapurl: facilityObj.mapurl,
+                    admins: facilityObj.admins,
+                };
+            } else {
+                // If no language is specified, return all fields (including _en and _my)
+                return facilityObj;
+            }
+        });
+
         return res.status(200).json({
             success: true,
-            count: facilities.length,
-            facilities
+            count: formattedFacilities.length,
+            facilities: formattedFacilities
         });
 
     } catch (error) {
