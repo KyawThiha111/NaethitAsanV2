@@ -54,6 +54,30 @@ const aboutusBannerSchema = new Schema({
         type:String,
         required:false,
     },
+    homepageblogtitle_en:{
+        type:String,
+        required:true,
+        default:"A Reason To Smile"
+    },
+    homepageblogtitle_my:{
+        type:String,
+        required:true,
+        default:"ပြုံးရွှင်ဖွယ်အကြောင်းတစ်ခု"
+    },
+    homepageblog_en:{
+        type:String,
+        required:true,
+        default:"In a world where most of non-profits focus solely on service, our social enterprise model inspires a new way forward: financialy viable, smartly funded, and diverstiified for lasting impact. We believe that substainable success not only changes lives but also builds a future where every smile counts. Join us in redefining change- because when passion is backed by sound business strategy, every step toward progress is a reason to smile."
+    },
+    homepageblog_my:{
+        type:String,
+        required:true,
+        default:'အများစုသော အကျိုးအမြတ်မယူသော အဖွဲ့အစည်းများက ဝန်ဆောင်မှုတစ်ခုတည်းကိုသာ အာရုံစိုက်နေကြသည့် ဤကမ္ဘာတွင်၊ ကျွန်ုပ်တို့၏ လူမှုစီးပွားလုပ်ငန်း ပုံစံသည် ဘဏ္ဍာရေးအရ တည်တံ့ခိုင်မြဲပြီး ဉာဏ်ပညာဖြင့် ရန်ပုံငွေရှာကာ မျိုးစုံဖွံ့ဖြိုးသော ရေရှည်သက်ရောက်မှုရှိသည့် လမ်းကြောင်းသစ်တစ်ခုကို ညွှန်ပြနေပါသည်။တည်တံ့ခိုင်မြဲသော အောင်မြင်မှုသည် လူတို့၏ဘဝများကို ပြောင်းလဲစေရုံသာမက၊ ပြုံးရွှင်မှုတိုင်း အရေးပါသည့် အနာဂတ်တစ်ခုကိုလည်း တည်ဆောက်ပေးသည်ဟု ကျွန်ုပ်တို့ယုံကြည်ပါသည်။စိတ်အားထက်သန်မှုကို ကောင်းမွန်သော စီးပွားရေးဗျူဟာများက အားဖြည့်ပေးသည့်အခါ၊ တိုးတက်မှုဆီသို့ လှမ်းသည့် ခြေလှမ်းတိုင်းသည် ပြုံးစရာအကြောင်းတစ်ခု ဖြစ်လာပါသည်။ ပြောင်းလဲမှုကို အဓိပ္ပါယ်သစ်ဖြင့် သတ်မှတ်ရန် ကျွန်ုပ်တို့နှင့်အတူ ပါဝင်လိုက်ပါ။"'
+    },
+    homepageblogimg:{
+    type:String,
+    required:false,
+    },
     introductionen:{
         type:String,
         required:true,

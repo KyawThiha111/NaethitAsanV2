@@ -18,6 +18,15 @@ export const UpdateAboutBanner = async (req, res) => {
     const adminid = req.adminid;
     let adminVerified = await verifyAdmin(adminid);
     if (!adminVerified) {
+      if (req.files) {
+        Object.values(req.files)
+          .flat()
+          .forEach((file) => {
+            const filename = path.basename(file.path);
+            const todeletePath = path.join("Aboutus", filename);
+            cleanUpFile(todeletePath);
+          });
+      }
       return res.status(403).json({
         success: false,
         message: "Unauthorized!",
@@ -32,6 +41,10 @@ export const UpdateAboutBanner = async (req, res) => {
       blogtitlemy,
       blogen,
       blogmy,
+      homepageblogtitle_en,
+      homepageblogtitle_my,
+      homepageblog_en,
+      homepageblog_my,
       introductionen,
       introductionmy,
     } = req.body;
@@ -46,6 +59,10 @@ export const UpdateAboutBanner = async (req, res) => {
       blogtitlemy,
       blogen,
       blogmy,
+      homepageblogtitle_en,
+      homepageblogtitle_my,
+      homepageblog_en,
+      homepageblog_my,
       introductionen,
       introductionmy,
     };
@@ -136,6 +153,26 @@ export const UpdateAboutBanner = async (req, res) => {
 
       updateData.backgroundblogimg = newBlogImg;
     }
+    // Process Homepageblog image if uploaded
+    if (req.files?.homepageblogimg) {
+      const newImg = `/public/Aboutus/${req.files.homepageblogimg[0].filename}`;
+
+      // Delete old blog image if exists
+      if (existingBanner.homepageblogimg) {
+        const oldPath = path.join(
+          __dirname,
+          "..",
+          "..",
+          existingBanner.homepageblogimg
+        );
+        const filename = path.basename(oldPath)
+        //don't worry there is existSync in the cleanup function
+        const todeletePath = path.join("Aboutus", filename);
+        cleanUpFile(todeletePath);
+      }
+
+      updateData.homepageblogimg = newImg;
+    }
 
     // Update the document
     const updatedBanner = await AboutUsBannerCollection.findByIdAndUpdate(
@@ -212,7 +249,9 @@ export const GetAboutBanner = async (req, res) => {
     const backgroundblogimgUrl = banner.backgroundblogimg
       ? `${BASE_URL}${banner.backgroundblogimg}`
       : null;
-
+    const homepageblogimgUrl = banner.homepageblogimg
+    ? `${BASE_URL}${banner.homepageblogimg}`
+    : null;
     // Structure the response based on language
     const response = {
       title: lang === "en" ? banner.titleen : banner.titlemy,
@@ -220,10 +259,15 @@ export const GetAboutBanner = async (req, res) => {
       images: {
         bannerbgimg: bannerbgimgUrl,
         backgroundblogimg: backgroundblogimgUrl,
+        homepageblogimg:homepageblogimgUrl
       },
       blog: {
         title: lang === "en" ? banner.blogtitleen : banner.blogtitlemy,
         content: lang === "en" ? banner.blogen : banner.blogmy,
+      },
+      homepageBlog:{
+       title: lang === "en"?banner.homepageblogtitle_en: banner.homepageblogtitle_my,
+       content: lang==="en"?banner.homepageblog_en:banner.homepageblog_my
       },
       introduction:
         lang === "en" ? banner.introductionen : banner.introductionmy,
@@ -262,6 +306,9 @@ export const toUpdateGetData = async (req, res) => {
       ? `${BASE_URL}${banner.backgroundblogimg}`
       : null;
 
+    const homepageblogimgUrl = banner.homepageblogimg
+    ? `${BASE_URL}${banner.homepageblogimg}`
+    : null;
     const response = {
       titleen: banner.titleen,
       titlemy: banner.titlemy,
@@ -273,8 +320,13 @@ export const toUpdateGetData = async (req, res) => {
       blogtitlemy: banner.blogtitlemy,
       blogen: banner.blogen,
       blogmy: banner.blogmy,
+      homepageblogtitle_en:banner.homepageblogtitle_en,
+      homepageblogtitle_my:banner.homepageblogtitle_my,
+      homepageblog_en:banner.homepageblog_en,
+      homepageblog_my:banner.homepageblog_my,
       bannerbgimg: bannerbgimgUrl,
       backgroundblogimg: backgroundblogimgUrl,
+      homepageblogimg:homepageblogimgUrl,
       createdAt: banner.createdAt,
       updatedAt: banner.updatedAt,
       admins: banner.admins,

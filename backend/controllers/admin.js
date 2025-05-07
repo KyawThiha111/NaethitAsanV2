@@ -5,6 +5,8 @@ import BlogCollection from "../models/blog.js";
 import TeamMemberCollection from "../models/AboutUs/teammember.js";
 import UserMessageCollection from "../models/ContactUs/usermessage.js";
 import facilitiesCollection from "../models/HomePage/facilities.js";
+import HomepagebannerCollection from "../models/HomePage/banner.js";
+import servicesCollection from "../models/OurServices/services.js";
 //create functions
 import addAdminToCollectionWhileSignUp from "../utils/signupcollectionupdate.js";
 import bcryptjs from "bcryptjs"
@@ -90,6 +92,25 @@ export const SignUpVerify = async (req, res) => {
                 await aboutUsBanner.save();
             }
         }
+        // Handle Home Page Banner document creation/update
+    let homepageBanner = await HomepagebannerCollection.findOne({});
+        if (!homepageBanner) {
+            const adminscount = await adminCollection.countDocuments();
+            if(adminscount>0){
+            const getalladmins = await adminCollection.find({},"_id");
+            const alladminids = getalladmins.map((admin)=>admin._id);
+            // First admin - create new document with default values
+            homepageBanner = await HomepagebannerCollection.create({
+                admins:alladminids,
+            });
+        }
+        } else {
+            // Subsequent admins - add to existing document if not already present
+            if (!homepageBanner.admins.includes(adminExisting._id)) {
+                homepageBanner.admins.push(adminExisting._id);
+                await homepageBanner.save();
+            }
+        }
        /* Update admins to collection*/
        //1.Aboutusmission
        const aboutusmissioncount = await AbouUsMissionCollection.countDocuments();
@@ -115,6 +136,11 @@ export const SignUpVerify = async (req, res) => {
        const facilitiesCount = await facilitiesCollection.countDocuments();
        if(facilitiesCount>0){
         await addAdminToCollectionWhileSignUp(adminExisting._id,facilitiesCollection)
+       }
+       /* Services Message */
+       const serviceCount = await servicesCollection.countDocuments();
+       if(serviceCount>0){
+        await addAdminToCollectionWhileSignUp(adminExisting._id,servicesCollection)
        }
         return res.status(200).json({
             success: true,
