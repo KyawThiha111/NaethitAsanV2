@@ -304,7 +304,7 @@ export const GetAllFacilities = async (req, res) => {
         return res.status(500).json({
             success: false,
             message: "Internal server error!",
-            error: process.env.NODE_ENV === "development" ? error.message : undefined,
+            error: process.env.NODE_ENV==="development" ? error.message : undefined,
         });
     }
 };
