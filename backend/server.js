@@ -27,6 +27,7 @@ import usermessageRouter from "./routes/Contactus/usermessage.js";
 import FacilityRouter from "./routes/Homepage/facilities.js";
 import ServicesRoutes from "./routes/Services/services.js";
 import HomepageBannerRoutes from "./routes/Homepage/homepagebanner.js";
+import TestimonalRouter from "./routes/Homepage/testimonals.js";
 import servicesCollection from "./models/OurServices/services.js";
 const server = express()
 
@@ -70,6 +71,7 @@ server.use("/api/pages",TeamMemberRouters);
 server.use("/api/pages",usermessageRouter)
 server.use("/api/pages",ServicesRoutes)
 server.use("/api/pages",HomepageBannerRoutes)
+server.use("/api/pages",TestimonalRouter)
 /* Home Page */
 server.use("/api/pages",FacilityRouter)
 server.listen(process.env.PORT,()=>{

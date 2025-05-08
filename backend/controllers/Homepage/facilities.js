@@ -272,7 +272,7 @@ export const GetAllFacilities = async (req, res) => {
             projection["openinghr_my"] = 1;
         }
 
-        const facilities = await facilitiesCollection.find({}, projection).sort({ createdAt: -1 });
+        const facilities = await facilitiesCollection.find({}, projection).sort({ createdAt: 1 });
 
         // Format the response to remove _en/_my suffixes and keep only generic fields
         const formattedFacilities = facilities.map(facility => {
