@@ -207,7 +207,7 @@ export const UpdateHomeBanner = async (req, res) => {
       const homepagebanner = await HomepagebannerCollection.find({}, projection)
         .sort({ createdAt: -1 })
         .lean(); // Using lean() for better performance
-  
+     console.log(homepagebanner)
       if (!homepagebanner || homepagebanner.length === 0) {
         return res.status(404).json({
           success: false,
@@ -262,7 +262,7 @@ export const UpdateHomeBanner = async (req, res) => {
   
       return res.status(200).json({
         success: true,
-        data: formattedBanners,
+        data: formattedBanners[0],
       });
   
     } catch (error) {
