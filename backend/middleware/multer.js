@@ -68,9 +68,19 @@ export const uploadServices = multer({
   { name: "img", maxCount: 1 },   // For banner background image
   { name: "logo", maxCount: 1 }  // For blog background image
 ]);
+//Services Data
+export const uploadServiceData = multer({
+  storage:getStorage("Services"),
+  fileFilter:imageFilter,
+  limits:{fileSize:10*1024*1024}
+}).fields([
+  {name:"banner_bg_img",maxCount:1},
+  {name:"blog1_img",maxCount:1},
+  {name:"blog2_img",maxCount:1},
+]);
 //Team Member
 export const uploadTeamMember = multer({storage:getStorage("Aboutus"),fileFilter:imageFilter,limits:{fileSize:5*1024*1024}})
 
 // Facilities
 export const uploadFacilities = multer({storage:getStorage("Homepage"),fileFilter:imageFilter,limits:{fileSize:5*1024*1024}})
-export const uploadHomepageBanner = multer({storage:getStorage("Homepage"),fileFilter:imageFilter,limits:{fileSize:5*1024*1024}})
+export const uploadHomepageBanner = multer({storage:getStorage("Homepage"),fileFilter:imageFilter,limits:{fileSize:5*1024*1024}});

@@ -7,6 +7,7 @@ import UserMessageCollection from "../models/ContactUs/usermessage.js";
 import facilitiesCollection from "../models/HomePage/facilities.js";
 import HomepagebannerCollection from "../models/HomePage/banner.js";
 import servicesCollection from "../models/OurServices/services.js";
+import servicepageDataCollection from "../models/OurServices/pagedata.js";
 //create functions
 import addAdminToCollectionWhileSignUp from "../utils/signupcollectionupdate.js";
 import bcryptjs from "bcryptjs"
@@ -111,6 +112,25 @@ export const SignUpVerify = async (req, res) => {
                 await homepageBanner.save();
             }
         }
+        // Handle Service Banner Data document creation/update
+    let serviceBanner = await servicepageDataCollection.findOne({});
+        if (!serviceBanner) {
+            const adminscount = await adminCollection.countDocuments();
+            if(adminscount>0){
+            const getalladmins = await adminCollection.find({},"_id");
+            const alladminids = getalladmins.map((admin)=>admin._id);
+            // First admin - create new document with default values
+            serviceBanner = await servicepageDataCollection.create({
+                admins:alladminids,
+            });
+        }
+        } else {
+            // Subsequent admins - add to existing document if not already present
+            if (!serviceBanner.admins.includes(adminExisting._id)) {
+                serviceBanner.admins.push(adminExisting._id);
+                await serviceBanner.save();
+            }
+        }
        /* Update admins to collection*/
        //1.Aboutusmission
        const aboutusmissioncount = await AbouUsMissionCollection.countDocuments();
@@ -137,7 +157,7 @@ export const SignUpVerify = async (req, res) => {
        if(facilitiesCount>0){
         await addAdminToCollectionWhileSignUp(adminExisting._id,facilitiesCollection)
        }
-       /* Services Message */
+       /* Services*/
        const serviceCount = await servicesCollection.countDocuments();
        if(serviceCount>0){
         await addAdminToCollectionWhileSignUp(adminExisting._id,servicesCollection)

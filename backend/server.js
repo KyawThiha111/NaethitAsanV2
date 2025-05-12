@@ -29,6 +29,7 @@ import ServicesRoutes from "./routes/Services/services.js";
 import HomepageBannerRoutes from "./routes/Homepage/homepagebanner.js";
 import TestimonalRouter from "./routes/Homepage/testimonals.js";
 import servicesCollection from "./models/OurServices/services.js";
+import ServiceDataRouter from "./routes/Services/servicedata.js";
 const server = express()
 
 /* Cors */
@@ -63,15 +64,16 @@ if(process.env.NODE_ENV==="development"){
 }
 
 server.use("/api/admin",adminRoutes);
-server.use("/api/pages",GalleryRoutes)
-server.use("/api/pages",BlogRouter)
+server.use("/api/pages",GalleryRoutes);
+server.use("/api/pages",BlogRouter);
 server.use("/api/pages",AboutBannerRouter)
 server.use("/api/pages",AboutMissionRoute)
 server.use("/api/pages",TeamMemberRouters);
-server.use("/api/pages",usermessageRouter)
-server.use("/api/pages",ServicesRoutes)
-server.use("/api/pages",HomepageBannerRoutes)
-server.use("/api/pages",TestimonalRouter)
+server.use("/api/pages",usermessageRouter);
+server.use("/api/pages",ServicesRoutes);
+server.use("/api/pages",HomepageBannerRoutes);
+server.use("/api/pages",TestimonalRouter);
+server.use("/api/pages",ServiceDataRouter);
 /* Home Page */
 server.use("/api/pages",FacilityRouter)
 server.listen(process.env.PORT,()=>{
