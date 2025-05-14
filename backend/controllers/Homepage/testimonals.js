@@ -104,6 +104,66 @@ export const GetAllTestimonal = async(req,res)=>{
     }
 }
 
+/* Get Each Testimonal */
+export const GetEachTestimonal = async(req,res)=>{
+    const {id} = req.params;
+    try {
+        const Testimonal = await TestimonalCollection.findById(id);
+    if(!Testimonal){
+        return res.status(404).json({success:false,message:"No Testimonal found.",error:"No Testimonal found."})
+    }
+   /* Success */
+   return res.status(200).json({success:true, testimonal: Testimonal}) 
+    } catch (error) {
+        console.log(error)
+    return res.status(500).json({success:false, message:"Internal server error!", error: process.env.NODE_ENV==="development"?error.message:undefined})
+    }
+}
+
+/* Update Testimonal */
+export const UpdateTestimonal = async(req,res)=>{
+    const adminid = req.adminid;
+    const {id} = req.params;
+    try {
+        const {note_en,note_my,patient_name_en,patient_name_my,patient_type_en,patient_type_my} = req.body;
+        const adminVerified = await verifyAdmin(adminid);
+        if(!adminVerified){
+            return res.status(403).json({success:false,message:"Unauthorized!",error:"Unauthorized!"})
+        }
+        /* Check the testimonal */
+        const Testimonal = await TestimonalCollection.findById(id);
+        if(!Testimonal){
+            return res.status(404).json({success:false,message:"No Testimonal found.",error:"No Testimonal found."})
+        }
+
+        /* Required fields */
+        const requiredFields = {note_en,note_my,patient_name_en,patient_name_my,patient_type_en,patient_type_my};
+        const missingFields = Object.entries(requiredFields)
+                            .filter(([_, value]) => !value)
+                            .map(([key]) => key);
+        if(missingFields.length>0){
+            return res.status(401).json({
+                success:true,
+                message:"Fields required!",
+                error:"Fields required!",
+                missingFields
+            })
+        }
+
+        const toUpdateData = {
+            ...req.body
+        }
+        const updatedTestimonal = await TestimonalCollection.findByIdAndUpdate(Testimonal._id,toUpdateData,{new:true,runValidators:true})
+        if(!updatedTestimonal){
+            return res.status(400).json({success:false,message:"Failed to update the testimonal!",error:"Failed to update the testimonal!"})
+        }
+        return res.status(400).json({success:true,message:"Successfully updated the testimonal!",updatedTestimonal})
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({success:false, message:"Internal server error!", error: process.env.NODE_ENV==="development"?error.message:undefined})
+    }
+}
+
 export const DeleteTestimonal = async(req,res)=>{
     const {id} = req.params;
     const adminid = req.adminid;
