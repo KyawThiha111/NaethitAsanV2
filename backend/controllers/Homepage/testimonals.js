@@ -157,7 +157,7 @@ export const UpdateTestimonal = async(req,res)=>{
         if(!updatedTestimonal){
             return res.status(400).json({success:false,message:"Failed to update the testimonal!",error:"Failed to update the testimonal!"})
         }
-        return res.status(400).json({success:true,message:"Successfully updated the testimonal!",updatedTestimonal})
+        return res.status(200).json({success:true,message:"Successfully updated the testimonal!",updatedTestimonal})
     } catch (error) {
         console.log(error)
         return res.status(500).json({success:false, message:"Internal server error!", error: process.env.NODE_ENV==="development"?error.message:undefined})
