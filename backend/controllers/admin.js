@@ -376,17 +376,20 @@ export const resetPasswordStep1 = async (req, res) => {
 };
 /* Password Reset 2 */
 export const resetPasswordStep2 = async(req,res)=>{
-    const {tokencode,newpassword,email} = req.body;
+    const {tokencode,newpassword,confirmpassword} = req.body;
     const dashboardURL = "http://localhost:5173/dashboard";
     try {
-       if(!tokencode||!newpassword||!email){
+       if(!tokencode||!newpassword||!confirmpassword){
           return res.status(400).json({success:false,message:"Field required!"})
        }
-       const adminExisting = await adminCollection.findOne({loginVerificationToken:tokencode,email:email,loginVerificationTokenExpiresAt:{$gt:Date.now()}})
+       const adminExisting = await adminCollection.findOne({loginVerificationToken:tokencode,loginVerificationTokenExpiresAt:{$gt:Date.now()}})
        if (!adminExisting) {
              return res.status(404).json({ success: false, message: "Invalid or expired verification code" });
          }
         /* Password Becrypt */
+        if(newpassword!==confirmpassword){
+            return res.status(400).json({success:false, message:"New Password and Confirm password don't match!"})
+        }
        const hashedpassword = await bcryptjs.hash(newpassword,10)
        adminExisting.password = hashedpassword
        adminExisting.isVerified=true;
