@@ -2,12 +2,7 @@ import { Schema,model } from "mongoose";
 import mongoose from "mongoose";
 
 const userMessageSchema = new Schema({
-    firstname:{
-        type:String,
-        required:true,
-        unique:false
-    },
-    lastname:{
+    sendername:{
         type:String,
         required:false,
         unique:false
@@ -24,7 +19,7 @@ const userMessageSchema = new Schema({
     },
     subject:{
         type:String,
-        enum:["General Inquiry","Donation Question","Volunteer Opputunity","Partnership Inquiry"],
+       // enum:["General Inquiry","Donation Question","Volunteer Opputunity","Partnership Inquiry"],
         required:true,
         unique:false
     },
