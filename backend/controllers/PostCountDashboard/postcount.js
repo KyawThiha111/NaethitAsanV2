@@ -24,12 +24,30 @@ export const GetPostCount = async(req,res)=>{
         const countBlogs = await BlogCollection.countDocuments();
 
         const formattedCountData = {
-            servicesCount: countServices,
-            membersCount: countMembers,
-            usermessageCount: countUserMessage,
-            clinicCount: countClinics,
-            testimonalsCount: countTestimonals,
-            blogsCount: countBlogs
+            services: {
+                title:"Services",
+                count:countServices
+            },
+            members:{
+                title:"Members",
+                count:countMembers
+            },
+            usermessageCount:{
+                title:"Messages from Users",
+                count:countUserMessage
+            },
+            clinicCount: {
+                title:"Clinics",
+                count:countClinics
+            },
+            testimonalsCount: {
+                title:"Testimonals",
+                count:countTestimonals
+            },
+            blogsCount:{
+                title:"Blogs and News",
+                count:countBlogs
+            }
         }
         return res.status(200).json({success:true,formattedCountData})
     } catch (error) {

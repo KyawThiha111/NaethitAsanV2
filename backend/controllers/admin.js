@@ -8,6 +8,7 @@ import facilitiesCollection from "../models/HomePage/facilities.js";
 import HomepagebannerCollection from "../models/HomePage/banner.js";
 import servicesCollection from "../models/OurServices/services.js";
 import servicepageDataCollection from "../models/OurServices/pagedata.js";
+import ContactusCollection from "../models/ContactUs/contactus.js";
 //create functions
 import addAdminToCollectionWhileSignUp from "../utils/signupcollectionupdate.js";
 import bcryptjs from "bcryptjs"
@@ -93,6 +94,21 @@ export const SignUpVerify = async (req, res) => {
                 await aboutUsBanner.save();
             }
         }
+    /* Contact us creation or Update */
+    let ContactUsData = await ContactusCollection.findOne({});
+    if(!ContactUsData){
+        const adminscount = await adminCollection.countDocuments();
+        if(adminscount&&adminscount>0){
+            const getalladmins = await adminCollection.find({},"_id");
+            const alladminids = getalladmins.map((admin)=>admin._id);
+            ContactUsData = await ContactusCollection.create({admins:alladminids})
+        }
+    }else{
+        if(!ContactUsData.admins.includes(adminExisting._id)){
+            ContactUsData.admins.push(adminExisting._id);
+            await ContactUsData.save()
+        }
+    }
         // Handle Home Page Banner document creation/update
     let homepageBanner = await HomepagebannerCollection.findOne({});
         if (!homepageBanner) {
