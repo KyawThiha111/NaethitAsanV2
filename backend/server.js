@@ -31,6 +31,7 @@ import TestimonalRouter from "./routes/Homepage/testimonals.js";
 import servicesCollection from "./models/OurServices/services.js";
 import ServiceDataRouter from "./routes/Services/servicedata.js";
 import PostCountRouter from "./routes/PostCountDashboard/postcount.js";
+import ContactUsRouter from "./routes/Contactus/contactus.js";
 const server = express()
 
 /* Cors */
@@ -76,6 +77,7 @@ server.use("/api/pages",HomepageBannerRoutes);
 server.use("/api/pages",TestimonalRouter);
 server.use("/api/pages",ServiceDataRouter);
 server.use("/api/pages",PostCountRouter)
+server.use("/api/pages",ContactUsRouter)
 /* Home Page */
 server.use("/api/pages",FacilityRouter)
 server.listen(process.env.PORT,()=>{
