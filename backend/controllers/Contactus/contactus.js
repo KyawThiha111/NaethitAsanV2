@@ -24,8 +24,8 @@ export const EditContactData = async (req, res) => {
     head_office_2,
     head_office_3,
     weekdays_office_hr,
-    Sat_office_hr,
-    Sun_office_hr,
+    sat_office_hr,
+    sun_office_hr,
   } = req.body;
 
   try {
@@ -39,8 +39,8 @@ export const EditContactData = async (req, res) => {
       primary_email,
       head_office_1,
       weekdays_office_hr,
-      Sat_office_hr,
-      Sun_office_hr,
+      sat_office_hr,
+      sun_office_hr,
     };
 
     const missingFields = Object.entries(requiredFields)
@@ -69,8 +69,8 @@ export const EditContactData = async (req, res) => {
       primary_email,
       head_office_1,
       weekdays_office_hr,
-      Sat_office_hr,
-      Sun_office_hr,
+      sat_office_hr,
+      sun_office_hr,
     };
 
     if (secondary_phone_number){
@@ -106,8 +106,8 @@ export const EditContactData = async (req, res) => {
 
     const updated = await ContactusCollection.findByIdAndUpdate(
       existingContactData._id,
-      { $set: toUpdateContactData },
-      { new: true }
+      toUpdateContactData,
+      { new: true,runValidators:true}
     );
 
     if (!updated) {
