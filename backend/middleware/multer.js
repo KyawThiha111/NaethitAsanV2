@@ -80,7 +80,7 @@ export const uploadServiceData = multer({
 ]);
 //Team Member
 export const uploadTeamMember = multer({storage:getStorage("Aboutus"),fileFilter:imageFilter,limits:{fileSize:5*1024*1024}})
-
+export const uploadLeader = multer({storage:getStorage("Aboutus"),fileFilter:imageFilter,limits:{fileSize:5*1024*1024}})
 // Facilities
 export const uploadFacilities = multer({storage:getStorage("Homepage"),fileFilter:imageFilter,limits:{fileSize:5*1024*1024}})
 export const uploadHomepageBanner = multer({storage:getStorage("Homepage"),fileFilter:imageFilter,limits:{fileSize:5*1024*1024}});

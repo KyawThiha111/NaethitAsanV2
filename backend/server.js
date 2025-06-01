@@ -32,6 +32,7 @@ import servicesCollection from "./models/OurServices/services.js";
 import ServiceDataRouter from "./routes/Services/servicedata.js";
 import PostCountRouter from "./routes/PostCountDashboard/postcount.js";
 import ContactUsRouter from "./routes/Contactus/contactus.js";
+import LeaderRouters from "./routes/Aboutus/leader.js";
 const server = express()
 
 /* Cors */
@@ -78,6 +79,7 @@ server.use("/api/pages",TestimonalRouter);
 server.use("/api/pages",ServiceDataRouter);
 server.use("/api/pages",PostCountRouter)
 server.use("/api/pages",ContactUsRouter)
+server.use("/api/pages",LeaderRouters)
 /* Home Page */
 server.use("/api/pages",FacilityRouter)
 server.listen(process.env.PORT,()=>{
