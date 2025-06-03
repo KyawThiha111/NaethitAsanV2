@@ -19,7 +19,7 @@ export const CreateFacility = async (req, res) => {
     const getalladmins = await adminCollection.find({}, "_id");
     const alladminids = getalladmins.map((admin) => admin._id);
 
-    const { clinicname_en,clinicname_my,openinghr_en,openinghr_my,mapurl } = req.body;
+    const { clinicname_en,clinicname_my,openinghr_en,openinghr_my,mapurl,address_en,address_my } = req.body;
 
     // Handle uploaded image
     if (req.file) {
@@ -39,7 +39,7 @@ export const CreateFacility = async (req, res) => {
     }
 
     //Fields Validation
-    const requiredFields = {clinicname_en,clinicname_my,openinghr_en,openinghr_my,mapurl};
+    const requiredFields = {clinicname_en,clinicname_my,openinghr_en,openinghr_my,mapurl,address_en,address_my};
      const missingFields = Object.entries(requiredFields)
           .filter(([_, value]) => !value)
           .map(([key]) => key);
@@ -61,6 +61,8 @@ export const CreateFacility = async (req, res) => {
       clinicname_my,
       openinghr_en,
       openinghr_my,
+      address_en,
+      address_my,
       mapurl,
       photo: `/public/Homepage/${req.file.filename}`,
       admins: alladminids,

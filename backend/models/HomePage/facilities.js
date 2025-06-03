@@ -22,6 +22,16 @@ const facilitiesSchema = new Schema({
         required:true,
         unique:false
     },
+    address_en:{
+        type:String,
+        required:true,
+        unique:false
+    },
+    address_my:{
+        type:String,
+        required:true,
+        unique:false
+    },
     mapurl:{
     type:String,
     required:true
