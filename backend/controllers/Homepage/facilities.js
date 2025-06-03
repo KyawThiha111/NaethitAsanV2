@@ -267,11 +267,14 @@ export const GetAllFacilities = async (req, res) => {
         if (lang === "my" || lang === "en") {
             projection[`clinicname_${lang}`] = 1;
             projection[`openinghr_${lang}`] = 1;
+            projection[`address_${lang}`] = 1;
         } else if (lang === undefined) {
             projection["clinicname_en"] = 1;
             projection["clinicname_my"] = 1;
             projection["openinghr_en"] = 1;
             projection["openinghr_my"] = 1;
+            projection["address_en"] = 1;
+            projection["address_my"] = 1;
         }
 
         const facilities = await facilitiesCollection.find({}, projection).sort({ createdAt: 1 });
@@ -285,6 +288,7 @@ export const GetAllFacilities = async (req, res) => {
                     _id: facilityObj._id,
                     clinicname: facilityObj[`clinicname_${lang}`],
                     openinghr: facilityObj[`openinghr_${lang}`],
+                    address:facilityObj[`address_${lang}`],
                     photo: facilityObj.photo,
                     mapurl: facilityObj.mapurl,
                     admins: facilityObj.admins,
