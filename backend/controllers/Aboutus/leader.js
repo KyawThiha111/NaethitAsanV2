@@ -187,10 +187,12 @@ export const updateLeader = async(req,res)=>{
         throw new Error("Failed to update the member!")
        }
        // Clean up old file after successful update
-           if (oldFilePath) {
-             const filename = path.basename(oldFilePath);
-             const todeletePath = path.join("Aboutus", filename);
-            cleanUpFile(todeletePath);
+           if(req.file && oldFilePath){
+            if (oldFilePath) {
+              const filename = path.basename(oldFilePath);
+              const todeletePath = path.join("Aboutus", filename);
+             cleanUpFile(todeletePath);
+            }
            }
            return res.status(200).json({
             success: true,
