@@ -106,7 +106,7 @@ export const UpdateFacility = async (req, res) => {
     try {
         const { id } = req.params; // Facility ID from URL params
         const adminid = req.adminid; // Admin ID from auth middleware
-        const { clinicname_en,clinicname_my,openinghr_en,openinghr_my,mapurl } = req.body; // Required fields from request body
+        const { clinicname_en,clinicname_my,openinghr_en,openinghr_my,mapurl,address_en,address_my } = req.body; // Required fields from request body
 
         // Handle new uploaded file if exists
         if (req.file) {
@@ -129,7 +129,7 @@ export const UpdateFacility = async (req, res) => {
             });
         }
         /* 2. REQUIRED FIELD CHECK */
-        const requiredFields = {clinicname_en,clinicname_my,openinghr_en,openinghr_my,mapurl};
+        const requiredFields = {clinicname_en,clinicname_my,openinghr_en,openinghr_my,mapurl,address_en,address_my};
         const missingFields = Object.entries(requiredFields)
             .filter(([_, value]) => !value)
             .map(([key]) => key);
@@ -193,6 +193,8 @@ export const UpdateFacility = async (req, res) => {
             clinicname_my,
             openinghr_en,
             openinghr_my,
+            address_en,
+            address_my,
             mapurl,
             ...(req.file && { photo: `/public/Homepage/${req.file.filename}` }),
             updatedAt: Date.now()
@@ -304,7 +306,6 @@ export const GetAllFacilities = async (req, res) => {
             count: formattedFacilities.length,
             facilities: formattedFacilities
         });
-
     } catch (error) {
         console.error("Get all facilities error:", error);
         return res.status(500).json({
