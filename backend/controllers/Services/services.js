@@ -41,7 +41,7 @@ export const CreateServices = async(req,res)=>{
         return res.status(403).json({success:false,message:"Unauthorized to add a service! Login first!"})
     }
     const {title_en,title_my,subtitle_en,subtitle_my,description_en,description_my,showonhomepage}= req.body;
-    const requiredFields = {title_en,title_my,subtitle_en,subtitle_my,description_en,description_my,showonhomepage};
+    const requiredFields = {title_en,title_my,subtitle_en,subtitle_my,showonhomepage};
       const missingFields = Object.entries(requiredFields)
         .filter(([_, value]) => !value)
         .map(([key]) => key);
@@ -160,7 +160,7 @@ export const UpdateService = async (req, res) => {
       }
   
       const { title_en, title_my, subtitle_en, subtitle_my, description_en, description_my, showonhomepage } = req.body;
-      const requiredFields = { title_en, title_my, subtitle_en, subtitle_my, description_en, description_my, showonhomepage };
+      const requiredFields = { title_en, title_my, subtitle_en, subtitle_my, showonhomepage };
       const missingFields = Object.entries(requiredFields).filter(([_, v]) => !v).map(([k]) => k);
   
       if (missingFields.length > 0) {
@@ -217,7 +217,7 @@ export const UpdateService = async (req, res) => {
       return res.status(500).json({
         success: false,
         message: "Internal server error",
-        error: process.env.NODE_ENV === "development" ? error.message : undefined,
+        error: process.env.NODE_ENV === "development" ? error.message : error.message,
       });
     }
   };

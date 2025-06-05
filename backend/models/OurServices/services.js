@@ -35,15 +35,16 @@ const servicesSchema = new Schema({
     },
     description_en:{
         type:String,
-        required:true
+        required:false
     },
     description_my:{
         type:String,
-        required:true
+        required:false
     },
     showonhomepage:{
         type:String,
-        required:true
+        required:false,
+        default:"false"
     },
     admins:[
         {
