@@ -33,6 +33,7 @@ import ServiceDataRouter from "./routes/Services/servicedata.js";
 import PostCountRouter from "./routes/PostCountDashboard/postcount.js";
 import ContactUsRouter from "./routes/Contactus/contactus.js";
 import LeaderRouters from "./routes/Aboutus/leader.js";
+import NotiCountRouter from "./routes/Contactus/notirequest.js";
 const server = express()
 
 /* Cors */
@@ -80,6 +81,7 @@ server.use("/api/pages",ServiceDataRouter);
 server.use("/api/pages",PostCountRouter)
 server.use("/api/pages",ContactUsRouter)
 server.use("/api/pages",LeaderRouters)
+server.use("/api/pages",NotiCountRouter)
 /* Home Page */
 server.use("/api/pages",FacilityRouter)
 server.listen(process.env.PORT,()=>{

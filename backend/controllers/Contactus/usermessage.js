@@ -1,6 +1,7 @@
 import UserMessageCollection from "../../models/ContactUs/usermessage.js";
 import adminCollection from "../../models/admin.js";
 import { verifyAdmin } from "../../utils/adminverify.js";
+import notiCollection from "../../models/NOTI/messagenoti.js";
 import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -62,7 +63,21 @@ export const createUserMessage = async (req, res) => {
         if (!newMessage) {
             throw new Error("Failed to create message in database");
         }
-
+        
+        const exisitngNotiCollection = await notiCollection.findOne({});
+        if(!exisitngNotiCollection){
+            const toCreateCount = {
+                count: 0,
+                admins:alladminids
+            }
+            const createCount = await notiCollection.create(toCreateCount);
+            if(!createCount){
+                return res.status(400).json({success:false,message:"Error while sending the noti to the admin!"})
+            }
+        }else{
+            exisitngNotiCollection.count += 1;
+            exisitngNotiCollection.save()
+        }
         return res.status(201).json({
             success: true,
             message: "Message successfully sent to the admin!",
