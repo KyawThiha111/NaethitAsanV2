@@ -29,6 +29,7 @@ export const CreateBlog = async (req, res) => {
       descriptionmy,
       timelength,
       catagory,
+      postdate
     } = req.body;
 
     // Validate required fields (removed postdate from required fields)
@@ -39,6 +40,7 @@ export const CreateBlog = async (req, res) => {
       descriptionmy,
       timelength,
       catagory,
+      postdate
     };
 
     // Set file path if file exists
@@ -98,9 +100,9 @@ export const CreateBlog = async (req, res) => {
       titlemy,
       descriptionen,
       descriptionmy,
-      postdate: new Date(), // Automatically set current date/time
       timelength,
       catagory,
+      postdate,
       admins: alladminids,
       ...(req.file && { img: `/public/Blog/${req.file.filename}` }),
     };
@@ -155,6 +157,7 @@ export const UpdateBlogPost = async (req, res) => {
       descriptionmy,
       timelength,
       catagory,
+      postdate
     } = req.body; // Removed postdate from destructuring
 
     // Set file paths for cleanup
@@ -175,6 +178,7 @@ export const UpdateBlogPost = async (req, res) => {
       descriptionmy,
       timelength,
       catagory,
+      postdate
     };
     
     const missingFields = Object.entries(requiredFields)
@@ -243,6 +247,7 @@ export const UpdateBlogPost = async (req, res) => {
       descriptionmy,
       timelength,
       catagory,
+      postdate,
       ...(req.file && { img: `/public/Blog/${req.file.filename}` }),
       updatedAt: new Date() // Set current timestamp for update
     };
@@ -264,10 +269,12 @@ export const UpdateBlogPost = async (req, res) => {
     }
 
     // Clean up old file after successful update
-    if (oldFilePath) {
-      const filename = path.basename(oldFilePath);
-      const todeletePath = path.join("Blog", filename);
-      cleanUpFile(todeletePath);
+    if(newFilePath){
+      if(oldFilePath) {
+        const filename = path.basename(oldFilePath);
+        const todeletePath = path.join("Blog", filename);
+        cleanUpFile(todeletePath);
+      }
     }
 
     return res.status(200).json({
@@ -326,7 +333,6 @@ export const GetAllBlog = async (req, res) => {
 
     const blogs = await BlogCollection.find({}, projection)
       .sort({ postdate: -1 })
-      .populate("admins", "adminname email position");
 
     if (!blogs || blogs.length === 0) {
       return res.status(404).json({
@@ -414,11 +420,8 @@ export const GetSingleBlog = async (req, res) => {
       });
     }
 
-    const blog = await BlogCollection.findById(id, projection).populate(
-      "admins",
-      "adminname email position"
-    );
-
+    const blog = await BlogCollection.findById(id, projection);
+    
     if (!blog) {
       return res.status(404).json({
         success: false,
@@ -503,7 +506,6 @@ export const GetBlogsByCategory = async (req, res) => {
 
     const blogs = await BlogCollection.find(filter, projection)
       .sort({ postdate: -1 })
-      .populate('admins', 'adminname email');
 
     if (!blogs || blogs.length === 0) {
       return res.status(404).json({
