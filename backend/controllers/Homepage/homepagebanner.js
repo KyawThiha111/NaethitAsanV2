@@ -13,22 +13,22 @@ dotenv.config({
 });
 
 export const UpdateHomeBanner = async (req, res) => {
-    let newfilename = null;
-    let oldfilename = null;
+    let newBgImgPath = null;
+    let newBlogImgPath = null;
     const adminid = req.adminid;
-    
+
     try {
-      if (req.file) {
-        newfilename = path.basename(req.file.path);
+      if (req.files?.homepage_banner_bg) {
+        newBgImgPath = path.basename(req.files.homepage_banner_bg[0].filename);
       }
-  
+      if(req.files?.homepage_blog_img){
+        newBlogImgPath = path.basename(req.files.homepage_blog_img[0].filename)
+      }
       /* Verify admin */
       const adminVerified = await verifyAdmin(adminid);
       if (!adminVerified) {
-        if (newfilename) {
-          const todeletePath = path.join("Homepage", newfilename);
-          cleanUpFile(todeletePath);
-        }
+        if(newBgImgPath) cleanUpFile(path.join("Homepage",newBgImgPath))
+        if(newBlogImgPath) cleanUpFile(path.join("Homepage",newBlogImgPath))
         return res.status(403).json({
           success: false,
           message: "Unauthorized to update the homepage! Login first!",
@@ -64,8 +64,6 @@ export const UpdateHomeBanner = async (req, res) => {
         description_my,
         homepageblog_title_en,
         homepageblog_title_my,
-        homepageblog_subtitle_en,
-        homepageblog_subtitle_my,
         homepageblog_en,
         homepageblog_my,
         yos_en,
@@ -83,10 +81,8 @@ export const UpdateHomeBanner = async (req, res) => {
         .map(([key]) => key);
   
       if (missingFields.length > 0) {
-        if (newfilename) {
-          const todeletePath = path.join("Homepage", newfilename);
-          cleanUpFile(todeletePath);
-        }
+        if(newBgImgPath) cleanUpFile(path.join("Homepage",newBgImgPath))
+        if(newBlogImgPath) cleanUpFile(path.join("Homepage",newBlogImgPath))
         return res.status(400).json({
           success: false,
           message: "Fields required!",
@@ -98,10 +94,8 @@ export const UpdateHomeBanner = async (req, res) => {
       const existingHomepageBanner = await HomepagebannerCollection.findOne({ admins: adminid });
       
       if (!existingHomepageBanner) {
-        if (newfilename) {
-          const todeletePath = path.join("Homepage", newfilename);
-          cleanUpFile(todeletePath);
-        }
+       if(newBgImgPath) cleanUpFile(path.join("Homepage",newBgImgPath))
+        if(newBlogImgPath) cleanUpFile(path.join("Homepage",newBlogImgPath))
         return res.status(404).json({
           success: false,
           message: "No banner found to update!",
@@ -109,8 +103,11 @@ export const UpdateHomeBanner = async (req, res) => {
       }
   
       const ToUpdateData = { ...req.body };
-      if (newfilename) {
-        ToUpdateData.homepage_banner_bg = `/public/Homepage/${newfilename}`;
+      if (newBgImgPath) {
+        ToUpdateData.homepage_banner_bg = `/public/Homepage/${newBgImgPath}`;
+      }
+      if (newBlogImgPath) {
+        ToUpdateData.homepage_blog_img = `/public/Homepage/${newBlogImgPath}`;
       }
   
       const updateBanner = await HomepagebannerCollection.findByIdAndUpdate(
@@ -120,23 +117,25 @@ export const UpdateHomeBanner = async (req, res) => {
       );
   
       if (!updateBanner) {
-        if (newfilename) {
-          const todeletePath = path.join("Homepage", newfilename);
-          cleanUpFile(todeletePath);
-        }
+      if(newBgImgPath) cleanUpFile(path.join("Homepage",newBgImgPath))
+        if(newBlogImgPath) cleanUpFile(path.join("Homepage",newBlogImgPath))
         return res.status(400).json({
           success: false,
           message: "Error occurred while updating the banner!",
         });
       }
-  
+      
       /* Get old photo to delete */
-      if (existingHomepageBanner.homepage_banner_bg && newfilename) {
-        oldfilename = path.basename(existingHomepageBanner.homepage_banner_bg);
+      if (existingHomepageBanner.homepage_banner_bg && newBgImgPath) {
+       let oldfilename = path.basename(existingHomepageBanner.homepage_banner_bg);
         const todeletePath = path.join("Homepage", oldfilename);
         cleanUpFile(todeletePath);
       }
-  
+     if(existingHomepageBanner.homepage_blog_img&& newBlogImgPath){
+     let oldfilename =path.basename(existingHomepageBanner.homepage_blog_img);
+      const todeletePath = path.join("Homepage",oldfilename)
+      cleanUpFile(todeletePath)
+     }
       return res.status(200).json({
         success: true,
         message: "Homepage banner updated successfully!",
@@ -144,11 +143,8 @@ export const UpdateHomeBanner = async (req, res) => {
       });
   
     } catch (error) {
-      if (req.file) {
-        const filename = path.basename(req.file.path);
-        const todeltepath = path.join("Homepage", filename);
-        cleanUpFile(todeltepath);
-      }
+      if(newBgImgPath) cleanUpFile(path.join("Homepage",newBgImgPath))
+        if(newBlogImgPath) cleanUpFile(path.join("Homepage",newBlogImgPath))
       console.error("Update error:", error);
       return res.status(500).json({
         success: false,
@@ -166,6 +162,7 @@ export const UpdateHomeBanner = async (req, res) => {
       // Base projection always includes the banner image
       const projection = {
         homepage_banner_bg: 1,
+        homepage_blog_img:1,
         createdAt: 1,
         updatedAt: 1
       };
@@ -219,7 +216,8 @@ export const UpdateHomeBanner = async (req, res) => {
       const formattedBanners = homepagebanner.map(banner => {
         const formattedBanner = {
           id: banner._id,
-          homepage_banner_bg: banner.homepage_banner_bg,
+          homepage_banner_bg: banner.homepage_banner_bg||null,
+          homepage_blog_img: banner.homepage_blog_img||null,
           createdAt: banner.createdAt,
           updatedAt: banner.updatedAt
         };
