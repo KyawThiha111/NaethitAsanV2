@@ -102,13 +102,11 @@ export const UpdateHomeBanner = async (req, res) => {
         });
       }
   
-      const ToUpdateData = { ...req.body };
-      if (newBgImgPath) {
-        ToUpdateData.homepage_banner_bg = `/public/Homepage/${newBgImgPath}`;
-      }
-      if (newBlogImgPath) {
-        ToUpdateData.homepage_blog_img = `/public/Homepage/${newBlogImgPath}`;
-      }
+      const ToUpdateData = { 
+        ...req.body,
+         homepage_banner_bg: newBgImgPath ? `/public/Homepage/${newBgImgPath}` : existingHomepageBanner.homepage_banner_bg,
+         homepage_blog_img: newBlogImgPath ? `/public/Homepage/${newBlogImgPath}` : existingHomepageBanner.homepage_blog_img
+       };
   
       const updateBanner = await HomepagebannerCollection.findByIdAndUpdate(
         existingHomepageBanner._id,
