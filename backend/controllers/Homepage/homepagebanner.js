@@ -101,7 +101,7 @@ export const UpdateHomeBanner = async (req, res) => {
           message: "No banner found to update!",
         });
       }
-  
+      
       const ToUpdateData = { 
         ...req.body,
          homepage_banner_bg: newBgImgPath ? `/public/Homepage/${newBgImgPath}` : existingHomepageBanner.homepage_banner_bg,

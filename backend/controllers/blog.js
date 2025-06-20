@@ -574,7 +574,7 @@ export const GetBlogsByCategory = async (req, res) => {
 export const GetBlogsPagination = async (req, res) => {
   try {
     const { catagory, lang, page = 1 } = req.query; // Add page parameter
-    const perPage = 6; // Items per page
+    const perPage = 4; // Items per page
 
     // Validate language if provided
     if (lang && !['en', 'my'].includes(lang)) {
@@ -642,7 +642,6 @@ export const GetBlogsPagination = async (req, res) => {
         image: blog.img ? `${BASE_URL}${blog.img}` : null,
         postdate: blog.postdate,
         timelength: blog.timelength,
-        authors: blog.admins,
         createdAt: blog.createdAt,
         updatedAt: blog.updatedAt
       };

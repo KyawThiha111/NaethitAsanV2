@@ -9,6 +9,7 @@ import HomepagebannerCollection from "../models/HomePage/banner.js";
 import servicesCollection from "../models/OurServices/services.js";
 import servicepageDataCollection from "../models/OurServices/pagedata.js";
 import ContactusCollection from "../models/ContactUs/contactus.js";
+import CataSchema from "../models/BlogCata/blogcata.js";
 //create functions
 import addAdminToCollectionWhileSignUp from "../utils/signupcollectionupdate.js";
 import bcryptjs from "bcryptjs"
@@ -162,6 +163,11 @@ export const SignUpVerify = async (req, res) => {
        const memberCount = await TeamMemberCollection.countDocuments();
        if(memberCount>0){
         await addAdminToCollectionWhileSignUp(adminExisting._id,TeamMemberCollection)
+       }
+       /* Cata Blog */
+       const BlogCataCount = await CataSchema.countDocuments();
+       if(BlogCataCount>0){
+        await addAdminToCollectionWhileSignUp(adminExisting._id,BlogCataCount)
        }
        /* 4.User Message */
        const userMessageCount = await UserMessageCollection.countDocuments();
