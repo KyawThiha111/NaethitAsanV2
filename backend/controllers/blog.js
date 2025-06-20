@@ -595,7 +595,7 @@ export const GetBlogsPagination = async (req, res) => {
 
     // Build category filter
     const filter = {};
-    if (catagory && catagory !== 'All') {
+    if (catagory && catagory !== 'all') {
       filter.catagory = catagory;
     }
 
