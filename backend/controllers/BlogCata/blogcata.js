@@ -90,4 +90,43 @@ export const GetAllCata = async (req, res) => {
   }
 };
 
+export const DeleteCata = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Validate ID
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: "Category ID is required!",
+      });
+    }
+
+    // Find and delete the category
+    const deleted = await CataSchema.findByIdAndDelete(id);
+
+    if (!deleted) {
+      return res.status(404).json({
+        success: false,
+        message: "Category not found or already deleted.",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Category deleted successfully!",
+      data: deleted,
+    });
+
+  } catch (error) {
+    console.error("Error deleting category:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined,
+    });
+  }
+};
+
+
 
