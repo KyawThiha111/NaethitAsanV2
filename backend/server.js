@@ -43,7 +43,8 @@ const allowedOrigins = [
     'http://localhost:5173',
     'https://nae-thit-dashboard-7ghi.vercel.app',
     "https://nae-thit-admin.vercel.app",
-    "https://www.naethit.com"
+    "https://www.naethit.com",
+    "https://naethit-dashboard.vercel.app"
   ];
 
   server.use(cors({
