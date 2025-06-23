@@ -74,7 +74,7 @@ export const SignUpVerify = async (req, res) => {
         const loginToken = generateAccessTokenAndSetCookie(res, adminExisting._id, adminExisting.position);
 
         // Send welcome email
-        await welcomeEmail(adminExisting.email, adminExisting.baseModelName, adminExisting.position);
+        await welcomeEmail(adminExisting.email, adminExisting.adminname, adminExisting.position);
 
         // Handle About Us banner document creation/update
     let aboutUsBanner = await AboutUsBannerCollection.findOne({});
@@ -167,7 +167,7 @@ export const SignUpVerify = async (req, res) => {
        /* Cata Blog */
        const BlogCataCount = await CataSchema.countDocuments();
        if(BlogCataCount>0){
-        await addAdminToCollectionWhileSignUp(adminExisting._id,BlogCataCount)
+        await addAdminToCollectionWhileSignUp(adminExisting._id,CataSchema)
        }
        /* 4.User Message */
        const userMessageCount = await UserMessageCollection.countDocuments();
@@ -432,4 +432,26 @@ export const logout = (req, res) => {
         success: true, 
         message: "Logged out successfully" 
     });
+};
+
+/* Get All Admin */
+export const getAllAdmins = async (req, res) => {
+  try {
+    const admins = await adminCollection
+      .find({}, "-password -verificationToken -verificationTokenExpiresAt") // Exclude sensitive fields
+      .sort({ createdAt: -1 }); // Optional: latest admins first
+
+    return res.status(200).json({
+      success: true,
+      message: "All admins fetched successfully!",
+      data: admins,
+    });
+  } catch (error) {
+    console.error("Error fetching admins:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined,
+    });
+  }
 };
